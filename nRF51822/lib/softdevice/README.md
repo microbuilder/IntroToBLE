@@ -1,0 +1,1 @@
+Download the Nordic SoftDevice and place it in this folder

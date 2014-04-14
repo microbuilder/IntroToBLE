@@ -1,0 +1,1 @@
+Download the Nordic SDK and place it in this folder
