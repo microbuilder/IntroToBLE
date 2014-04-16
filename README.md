@@ -1,4 +1,4 @@
 IntroToBLE
 ==========
 
-Code samples for Introduction to Bluetooth Low Energy from O'Reilly
+Code samples for Getting Started with Bluetooth Low Energy (O'Reilly Media)
