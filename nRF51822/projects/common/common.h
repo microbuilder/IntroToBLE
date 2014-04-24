@@ -36,11 +36,8 @@
 
 /** \defgroup Group_Common Common Files
  * @{
- *
  *  \defgroup Group_CommonH common.h
- *
- *  @{
- */
+ *  @{ */
 
 #ifndef _COMMON_H_
 #define _COMMON_H_
