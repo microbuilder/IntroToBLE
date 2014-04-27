@@ -48,7 +48,8 @@
 #include "ble_srv_common.h"
 #include "ble.h"
 
-#include "heart_rate.h"
+//#include "heart_rate.h"
+#include "btle_uart.h"
 
 //--------------------------------------------------------------------+
 // TYPE

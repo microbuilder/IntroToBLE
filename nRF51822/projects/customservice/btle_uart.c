@@ -96,8 +96,7 @@ void uart_service_bridge_task(void* p_context)
 {
   uint8_t buffer[BLE_UART_MAX_LENGTH];
   uint8_t i=0;
-  while ( NRF_SUCCESS == app_uart_get(&buffer[i]) &&
-      i < BLE_UART_MAX_LENGTH )
+  while ( NRF_SUCCESS == app_uart_get(&buffer[i]) && i < BLE_UART_MAX_LENGTH )
   {
     i++;
   }
@@ -219,7 +218,7 @@ error_t uart_service_send(uint8_t p_data[], uint16_t length)
       .p_len  = &length,
   };
 
-  ASSERT_STATUS(  sd_ble_gatts_hvx(m_uart_srvc.conn_handle, &hvx_params) );
+  ASSERT_STATUS( sd_ble_gatts_hvx(m_uart_srvc.conn_handle, &hvx_params) );
 
   return ERROR_NONE;
 }

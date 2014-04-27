@@ -22,7 +22,7 @@
 
 #include "btle_gap.h"
 #include "btle_advertising.h"
-//#include "custom/custom_helper.h"
+#include "custom_helper.h"
 
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF
@@ -49,11 +49,11 @@ btle_service_driver_t const btle_service_driver[] =
     #endif
 
     #if CFG_BLE_HEART_RATE
-    [UUID2OFFSET(BLE_UUID_HEART_RATE_SERVICE)] =
-    {
-        .init          = heart_rate_init,
-        .event_handler = heart_rate_handler,
-    },
+//    [UUID2OFFSET(BLE_UUID_HEART_RATE_SERVICE)] =
+//    {
+//        .init          = heart_rate_init,
+//        .event_handler = heart_rate_handler,
+//    },
     #endif
 
     #if CFG_BLE_IMMEDIATE_ALERT
@@ -87,32 +87,12 @@ enum {
 
 btle_service_custom_driver_t btle_service_custom_driver[] =
 {
-    #if CFG_BLE_UART
     {
         .uuid_base         = CFG_BLE_UART_UUID_BASE,
         .service_uuid.uuid = BLE_UART_UUID_PRIMARY_SERVICE,
         .init              = uart_service_init,
         .event_handler     = uart_service_handler
     },
-    #endif
-
-    #if CFG_PROTOCOL
-    {
-        .uuid_base         = CFG_BLE_PROTOCOL_UUID_BASE,
-        .service_uuid.uuid = 0,
-        .init              = protocol_service_init,
-        .event_handler     = protocol_service_handler
-    },
-    #endif
-
-    #if CFG_BLE_SENSOR
-    {
-        .uuid_base         = CFG_BLE_SENSOR_UUID_BASE,
-        .service_uuid.uuid = 0,
-        .init              = sensor_service_init,
-        .event_handler     = sensor_service_handler
-    },
-    #endif
 };
 
 enum {

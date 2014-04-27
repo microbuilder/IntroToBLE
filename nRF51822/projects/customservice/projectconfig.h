@@ -163,8 +163,8 @@
     #define CFG_BLE_LINK_LOSS                          0
 
     /*------------------------ CUSTOM UART SERVICE ------------------------*/
-    #define CFG_BLE_UART                               0
-    #define CFG_BLE_UART_BRIDGE                        0
+    #define CFG_BLE_UART                               1
+    #define CFG_BLE_UART_BRIDGE                        1
     #define CFG_BLE_UART_UUID_BASE                     "\x6E\x40\x00\x00\xB5\xA3\xF3\x93\xE0\xA9\xE5\x0E\x24\xDC\xCA\x9E"
 /*=========================================================================*/
 

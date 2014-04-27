@@ -52,7 +52,7 @@ void boardButtonCallback(uint8_t button_num)
 /**************************************************************************/
 int main(void)
 { 
-  app_timer_id_t blinky_timer_id;
+  app_timer_id_t blinky_timer_id, uart_timer_id;
   
   /* Initialize the target HW */
   boardInit();
@@ -63,6 +63,9 @@ int main(void)
   /* Initialise a 1 second blinky timer to show that we're alive */
   ASSERT_STATUS ( app_timer_create(&blinky_timer_id, APP_TIMER_MODE_REPEATED, blinky_handler) );
   ASSERT_STATUS ( app_timer_start (blinky_timer_id, APP_TIMER_TICKS(1000, CFG_TIMER_PRESCALER), NULL) );
+
+  ASSERT_STATUS ( app_timer_create(&uart_timer_id, APP_TIMER_MODE_REPEATED, uart_service_bridge_task) );
+  ASSERT_STATUS ( app_timer_start (uart_timer_id, APP_TIMER_TICKS(100, CFG_TIMER_PRESCALER), NULL) );
 
   while(true)
   {

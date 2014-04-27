@@ -2,20 +2,27 @@ TARGET_CHIP     := NRF51822_QFAA_CA
 BOARD           := BOARD_PCA10001
 DEVICE_VARIANT  := xxaa
 USE_SOFTDEVICE  := S110
-OUTPUT_FILENAME := ble_hrm
+
+# output file is the same as current directory
+OUTPUT_FILENAME = $(notdir $(shell pwd))
+#OUTPUT_FILENAME := ble_hrm
 
 # Additional Source Paths
 C_SOURCE_PATHS += boards/
 
 # Project Source Files
-C_SOURCE_FILES += main.c
-C_SOURCE_FILES += heart_rate.c
-C_SOURCE_FILES += btle.c
-C_SOURCE_FILES += btle_gap.c
-C_SOURCE_FILES += btle_advertising.c
-C_SOURCE_FILES += printf_retarget.c
-C_SOURCE_FILES += stdio.c
+#C_SOURCE_FILES += main.c
+#C_SOURCE_FILES += heart_rate.c
+#C_SOURCE_FILES += btle.c
+#C_SOURCE_FILES += btle_gap.c
+#C_SOURCE_FILES += btle_advertising.c
+#C_SOURCE_FILES += printf_retarget.c
+#C_SOURCE_FILES += stdio.c
 C_SOURCE_FILES += board_pca10001.c
+
+C_SOURCE_FILES += $(shell ls *.c)
+#C_SOURCE_FILES += $(shell ls boards/*.c)
+#$(error $(C_SOURCE_FILES))
 
 # [SDK]/app_common
 C_SOURCE_FILES += app_fifo.c
