@@ -95,24 +95,6 @@ btle_service_custom_driver_t btle_service_custom_driver[] =
         .event_handler     = uart_service_handler
     },
     #endif
-
-    #if CFG_PROTOCOL
-    {
-        .uuid_base         = CFG_BLE_PROTOCOL_UUID_BASE,
-        .service_uuid.uuid = 0,
-        .init              = protocol_service_init,
-        .event_handler     = protocol_service_handler
-    },
-    #endif
-
-    #if CFG_BLE_SENSOR
-    {
-        .uuid_base         = CFG_BLE_SENSOR_UUID_BASE,
-        .service_uuid.uuid = 0,
-        .init              = sensor_service_init,
-        .event_handler     = sensor_service_handler
-    },
-    #endif
 };
 
 enum {

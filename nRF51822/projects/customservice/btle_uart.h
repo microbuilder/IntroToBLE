@@ -57,6 +57,7 @@ void    uart_service_handler(ble_evt_t * p_ble_evt);
 
 error_t uart_service_send(uint8_t data[], uint16_t length);
 void    uart_service_received_callback(uint8_t * data, uint16_t length) ATTR_WEAK;
+void    uart_service_indicate_callback(bool is_succeeded);
 void    uart_service_bridge_task(void* p_context);
 
 #ifdef __cplusplus

@@ -45,6 +45,18 @@ void boardButtonCallback(uint8_t button_num)
   }
 }
 
+void uart_service_indicate_callback(bool is_succeeded)
+{
+  if ( is_succeeded )
+  {
+    printf("confirmation received\n");
+  }
+  else
+  {
+    printf("confirmation timeout\n");
+  }
+}
+
 /**************************************************************************/
 /*!
     @brief  Main application entry point

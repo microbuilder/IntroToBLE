@@ -57,6 +57,8 @@ typedef struct
 
   ble_gatts_char_handles_t  in_handle;
   ble_gatts_char_handles_t  out_handle;
+
+  bool  is_indication_waiting;
 } uart_srvc_t;
 
 static uart_srvc_t m_uart_srvc;
@@ -173,6 +175,23 @@ void uart_service_handler(ble_evt_t * p_ble_evt)
       m_uart_srvc.conn_handle = BLE_CONN_HANDLE_INVALID;
     break;
 
+    case BLE_GATTS_EVT_HVC: // Indication confirmation received from peer
+      if( m_uart_srvc.in_handle.value_handle == p_ble_evt->evt.gatts_evt.params.hvc.handle )
+      {
+        m_uart_srvc.is_indication_waiting = false;
+        uart_service_indicate_callback(true);
+      }
+    break;
+
+    case BLE_GATTS_EVT_TIMEOUT:
+      // timeout event does not have attribute handle --> use is_indication_waiting to determine if timeout is caused by this
+      if ( m_uart_srvc.is_indication_waiting )
+      {
+        m_uart_srvc.is_indication_waiting = false; // clear
+        uart_service_indicate_callback(false);
+      }
+    break;
+
     case BLE_GATTS_EVT_WRITE:
     {
       ble_gatts_evt_write_t * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
@@ -218,6 +237,7 @@ error_t uart_service_send(uint8_t p_data[], uint16_t length)
       .p_len  = &length,
   };
 
+  m_uart_srvc.is_indication_waiting = true;
   ASSERT_STATUS( sd_ble_gatts_hvx(m_uart_srvc.conn_handle, &hvx_params) );
 
   return ERROR_NONE;
