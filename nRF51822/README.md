@@ -19,7 +19,7 @@ The following tools are required regardless of the toolchain you are using (GNU 
 - The **nRF51822 SDK** (available after registering your nRF51822 board on [Nordic's website](http://www.nordicsemi.com/))
 - **S110 SoftDevice** (v6.0.0) (available after registering your nRF51822 board on [Nordic's website](http://www.nordicsemi.com/))
 
-**be sure to use the Windows installer for the SDK rather than the .zip file**, since there are several steps in the installation process that aren't handled by the .zip file!
+**Be sure to use the Windows installer for the SDK rather than the .zip file**, since there are several steps in the installation process that aren't handled by the .zip file!
 
 Installation Order
 ------------------
@@ -31,7 +31,7 @@ Optional Tools
 
 This codebase includes the **nrfjprog.exe** utility from Nordic (/tools/Windows/nordic) which allows you to program the flash from the command-line.
 
-Adding the SoftDevice and sDK to the Codebase
+Adding the SoftDevice and SDK to the Codebase
 ---------------------------------------------
 
 The SoftDevice must be unzipped and placed in the /lib/softdevice/* folder, and shown below. This allows multiple versions of the SoftDevice to co-exist in the codebase, and each Makefile can point to the appropriate header files for the softdevice used by that project:
