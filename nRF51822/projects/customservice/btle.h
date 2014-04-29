@@ -54,24 +54,15 @@
 //--------------------------------------------------------------------+
 // TYPE
 //--------------------------------------------------------------------+
-typedef struct {
-  error_t (* const init) (void);
-  void (* const event_handler) (ble_evt_t * );
-}btle_service_driver_t;
-
-typedef struct {
-  error_t (* const init) (uint8_t);
-  void (* const event_handler) (ble_evt_t * );
-
-  uint8_t const uuid_base[16];
-  ble_uuid_t service_uuid;
-}btle_service_custom_driver_t;
+enum {
+  BTLE_MAX_CHARACTERISTIC_PER_SERVICE = 10
+};
 
 typedef struct {
   uint16_t uuid;
   ble_gatt_char_props_t properties;
-  uint8_t  len_min;
-  uint8_t  len_max;
+  uint16_t  len_min;
+  uint16_t  len_max;
   uint8_t const * init_value;
 
   ble_gatts_char_handles_t handle; // characteristic handle
@@ -85,8 +76,14 @@ typedef struct {
   uint16_t handle; // service handle
 
   uint8_t char_count; // number of characteristics
-  btle_characteristic_t char_pool[5]; // flexible array member
+  btle_characteristic_t* char_pool[BTLE_MAX_CHARACTERISTIC_PER_SERVICE];
 }btle_service_t;
+
+/* ---------------------------------------------------------------------- */
+/* PUBLIC API                                                             */
+/* ---------------------------------------------------------------------- */
+error_t btle_characteristic_update(btle_characteristic_t const * p_char, void const * p_data, uint16_t len);
+error_t btle_init(btle_service_t service_list[], uint8_t const service_count);
 
 // https://developer.bluetooth.org/gatt/units/Pages/default.aspx
 typedef enum ble_gatt_unit_e
@@ -201,8 +198,6 @@ typedef enum ble_gatt_unit_e
   BLE_GATT_CPF_UNIT_CONCENTRATION_COUNT_PER_CUBIC_METRE                    = 0x27B5,
   BLE_GATT_CPF_UNIT_IRRADIANCE_WATT_PER_SQUARE_METRE                       = 0x27B6
 } ble_gatt_unit_t;
-
-error_t btle_init(void);
 
 #ifdef __cplusplus
  }

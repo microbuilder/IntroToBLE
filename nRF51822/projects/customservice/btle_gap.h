@@ -34,13 +34,6 @@
 */
 /**************************************************************************/
 
-/** \ingroup TBD
- *  \defgroup TBD
- *  \brief TBD
- *
- *  @{
- */
-
 #ifndef _BTLE_GAP_H_
 #define _BTLE_GAP_H_
 
@@ -50,11 +43,10 @@
 
 error_t btle_gap_init(void);
 void btle_gap_handler(ble_evt_t * p_ble_evt);
+uint16_t btle_gap_get_connection(void);
 
 #ifdef __cplusplus
  }
 #endif
 
 #endif /* _BTLE_GAP_H_ */
-
-/** @} */

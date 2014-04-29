@@ -46,6 +46,7 @@
 /* ---------------------------------------------------------------------- */
 /* MACRO CONSTANT TYPEDEF                                                 */
 /* ---------------------------------------------------------------------- */
+static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;
 
 /* ---------------------------------------------------------------------- */
 /* INTERNAL OBJECT & FUNCTION DECLARATION                                 */
@@ -106,9 +107,13 @@ error_t btle_gap_init(void)
   return ERROR_NONE;
 }
 
+uint16_t btle_gap_get_connection(void)
+{
+  return m_conn_handle;
+}
+
 void btle_gap_handler(ble_evt_t * p_ble_evt)
 {
-  static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;
   switch (p_ble_evt->header.evt_id)
   {
     case BLE_GAP_EVT_CONNECTED:
