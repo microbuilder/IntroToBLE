@@ -3,8 +3,9 @@
     @file     main.c
 */
 /**************************************************************************/
-#include "common.h"
-#include "board.h"
+#include "projectconfig.h"
+#include "common/common.h"
+#include "boards/board.h"
 #include "btle.h"
 #include "nrf_gpiote.h"
 #include "nrf_gpio.h"

@@ -1,0 +1,113 @@
+<!DOCTYPE CrossStudio_Project_File>
+<solution Name="nRF51822_UART" target="8" version="2">
+  <project Name="nRF51822_UART">
+    <configuration
+      Name="Common"
+      Placement="Flash"
+      Target="nRF51822-QFAA"
+      arm_architecture="v6M"
+      arm_core_type="Cortex-M0"
+      arm_gcc_target="arm-unknown-eabi"
+      arm_linker_heap_size="128"
+      arm_linker_stack_size="1024"
+      arm_simulator_memory_simulation_filename="$(TargetsDir)/nRF51/nRF51SimulatorMemory.dll"
+      arm_simulator_memory_simulation_parameter="nRF51822;0x40000;0x4000"
+      arm_target_debug_interface_type="ADIv5"
+      arm_target_interface_type="Default"
+      arm_target_loader_applicable_loaders="Flash"
+      arm_target_loader_default_loader="Flash"
+      c_additional_options="-fms-extensions"
+      c_preprocessor_definitions="STARTUP_FROM_RESET;BLE_STACK_SUPPORT_REQD;NRF51822_QFAA_GC;BOARD_PCA10001"
+      c_user_include_directories="$(TargetsDir)/nRF51/CMSIS;$(TargetsDir)/CMSIS_3/CMSIS/Include;$(ProjectDir)/;$(ProjectDir)/..;$(ProjectDir)/../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Include;$(ProjectDir)/../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Include/app_common;$(ProjectDir)/../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Include/ble;$(ProjectDir)/../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Include/ble/ble_services;$(ProjectDir)/../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Include/simple_uart;$(ProjectDir)/../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Include/sd_common;$(ProjectDir)/../../lib/softdevice/s110_nrf51822_6.0.0/s110_nrf51822_6.0.0_API/include"
+      debug_entry_point_symbol="notmain"
+      linker_memory_map_file="$(TargetsDir)/nRF51/nRF51822_QFAA_MemoryMap.xml"
+      linker_output_format="hex"
+      linker_section_placement_file="$(StudioDir)/targets/Cortex_M/flash_placement.xml"
+      linker_section_placement_macros="FLASH_START=0x14000;RAM_START=0x20002000"
+      project_directory=""
+      project_type="Executable"
+      property_groups_file_path="$(TargetsDir)/nRF51/propertyGroups.xml"
+      target_reset_script="Reset()"
+      target_script_file="$(TargetsDir)/nRF51/nRF51_Target.js" />
+    <configuration
+      Name="Flash"
+      arm_target_flash_loader_file_path="$(TargetsDir)/nRF51/Release/Loader.elf"
+      arm_target_loader_can_erase_all="Yes"
+      arm_target_loader_can_lock_all="No"
+      arm_target_loader_can_lock_range="No"
+      arm_target_loader_can_unlock_all="No"
+      arm_target_loader_can_unlock_range="No"
+      target_reset_script="FLASHReset()" />
+    <folder Name="Source Files">
+      <configuration Name="Common" filter="c;cpp;cxx;cc;h;s;asm;inc" />
+      <file file_name="main.c" />
+      <file file_name="btle.c" />
+      <file file_name="btle_advertising.c" />
+      <file file_name="btle_gap.c" />
+      <file file_name="btle_uart.c" />
+      <file file_name="custom_helper.c" />
+      <folder Name="boards">
+        <file file_name="boards/board_pca10001.c" />
+      </folder>
+      <file file_name="projectconfig.h" />
+    </folder>
+    <folder Name="System Files">
+      <file file_name="$(StudioDir)/source/thumb_crt0.s" />
+      <file file_name="$(TargetsDir)/nRF51/nRF51_ctl.c" />
+      <file file_name="$(TargetsDir)/nRF51/nRF51_ctl_board.c" />
+      <file file_name="$(TargetsDir)/nRF51/nRF51_Startup.s" />
+    </folder>
+    <folder Name="SDK Files">
+      <folder Name="app_common">
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/app_common/app_button.c" />
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/app_common/app_fifo.c" />
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/app_common/app_gpiote.c" />
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/app_common/app_timer.c" />
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/app_common/app_uart_fifo.c" />
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/app_common/crc16.c" />
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/app_common/pstorage.c" />
+      </folder>
+      <folder Name="ble">
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/ble/ble_advdata.c" />
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/ble/ble_bondmngr.c" />
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/ble/ble_conn_params.c" />
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/ble/ble_flash.c" />
+        <folder Name="ble_services">
+          <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/ble/ble_services/ble_srv_common.c" />
+        </folder>
+      </folder>
+      <folder Name="sd_common">
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/sd_common/softdevice_handler.c" />
+      </folder>
+      <folder Name="simple_uart">
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/simple_uart/simple_uart.c" />
+      </folder>
+      <folder Name="nrf_delay">
+        <file file_name="../../lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/nrf_delay/nrf_delay.c" />
+      </folder>
+    </folder>
+  </project>
+  <configuration Name="THUMB Debug" inherited_configurations="THUMB;Debug" />
+  <configuration
+    Name="THUMB"
+    Platform="ARM"
+    arm_instruction_set="Thumb"
+    arm_library_instruction_set="Thumb"
+    c_preprocessor_definitions="__THUMB"
+    hidden="Yes" />
+  <configuration
+    Name="Debug"
+    c_preprocessor_definitions="DEBUG"
+    gcc_debugging_level="Level 3"
+    gcc_optimization_level="None"
+    hidden="Yes" />
+  <configuration
+    Name="THUMB Release"
+    inherited_configurations="THUMB;Release" />
+  <configuration
+    Name="Release"
+    c_preprocessor_definitions="NDEBUG"
+    gcc_debugging_level="Level 1"
+    gcc_optimization_level="Level 1"
+    hidden="Yes" />
+</solution>

@@ -18,7 +18,8 @@
 extern "C" {
 #endif
 
-#include "common.h"
+#include "projectconfig.h"
+#include "common/common.h"
 
 #include "nrf_gpio.h"
 #include "app_timer.h"
