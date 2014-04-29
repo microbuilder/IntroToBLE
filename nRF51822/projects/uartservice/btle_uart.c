@@ -36,8 +36,6 @@
 
 #include "common/common.h"
 
-//#if CFG_BLE_UART
-
 //--------------------------------------------------------------------+
 // INCLUDE
 //--------------------------------------------------------------------+
@@ -66,7 +64,7 @@ static uart_srvc_t m_uart_srvc;
 //--------------------------------------------------------------------+
 // IMPLEMENTATION
 //--------------------------------------------------------------------+
-#if CFG_BLE_UART_BRIDGE
+#if BLE_UART_BRIDGE
 /**************************************************************************/
 /*!
     @brief      Callback function for the UART bridge to send incoming data
@@ -242,5 +240,3 @@ error_t uart_service_send(uint8_t p_data[], uint16_t length)
 
   return ERROR_NONE;
 }
-
-//#endif

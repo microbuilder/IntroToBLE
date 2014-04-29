@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
-    @file     btle_uart.h
+    @file     btle_gap.h
     @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2013, K. Townsend (microBuilder.eu)
+    Copyright (c) 2014, K. Townsend (microBuilder.eu)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -34,34 +34,19 @@
 */
 /**************************************************************************/
 
-#ifndef _BTLE_UART_H_
-#define _BTLE_UART_H_
+#ifndef _BTLE_GAP_H_
+#define _BTLE_GAP_H_
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-#include "common/common.h"
-#include "ble.h"
-
-//--------------------------------------------------------------------+
-// MACRO CONSTANT TYPEDEF
-//--------------------------------------------------------------------+
-#define BLE_UART_MAX_LENGTH           20
-#define BLE_UART_UUID_PRIMARY_SERVICE 1
-#define BLE_UART_UUID_IN              3
-#define BLE_UART_UUID_OUT             2
-
-error_t uart_service_init(uint8_t uuid_base_type);
-void    uart_service_handler(ble_evt_t * p_ble_evt);
-
-error_t uart_service_send(uint8_t data[], uint16_t length);
-void    uart_service_received_callback(uint8_t * data, uint16_t length) ATTR_WEAK;
-void    uart_service_indicate_callback(bool is_succeeded);
-void    uart_service_bridge_task(void* p_context);
+error_t btle_gap_init(void);
+void btle_gap_handler(ble_evt_t * p_ble_evt);
+uint16_t btle_gap_get_connection(void);
 
 #ifdef __cplusplus
  }
 #endif
 
-#endif /* _BTLE_UART_H_ */
+#endif /* _BTLE_GAP_H_ */

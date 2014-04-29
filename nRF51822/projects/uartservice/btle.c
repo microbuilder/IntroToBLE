@@ -24,8 +24,6 @@
 #include "btle_advertising.h"
 #include "custom_helper.h"
 
-
-
 //--------------------------------------------------------------------+
 // INTERNAL OBJECT & FUNCTION DECLARATION
 //--------------------------------------------------------------------+

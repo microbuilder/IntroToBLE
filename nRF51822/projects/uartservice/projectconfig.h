@@ -143,29 +143,6 @@
 
     #define CFG_GAP_ADV_INTERVAL_MS                    25                       /**< The advertising interval in miliseconds, should be multiply of 0.625 */
     #define CFG_GAP_ADV_TIMEOUT_S                      180                      /**< The advertising timeout in units of seconds. */
-
-    /*--------------------- DEVICE INFORMATION SERVICE --------------------*/
-    #define CFG_BLE_DEVICE_INFORMATION                 0
-    #define CFG_BLE_DEVICE_INFORMATION_NAME            "Bluetooth LE code base"
-    #define CFG_BLE_DEVICE_INFORMATION_MANUFACTURER    "microBuilder.eu"        /**< Manufacturer. Will be passed to Device Information Service. */
-    #define CFG_BLE_DEVICE_INFORMATION_MODEL_NUMBER    BOARD_NAME
-    #define CFG_BLE_DEVICE_INFORMATION_HARDWARE_REV    "A"
-
-    /*-------------------------- BATTERY SERVICE --------------------------*/
-    #define CFG_BLE_BATTERY                            0
-
-    /*------------------------- HEART RATE ------------------------*/
-    #define CFG_BLE_HEART_RATE                         1
-
-    /*-------------------------- PROXIMITY ------------------------*/
-    #define CFG_BLE_IMMEDIATE_ALERT                    0
-    #define CFG_BLE_TX_POWER                           0
-    #define CFG_BLE_LINK_LOSS                          0
-
-    /*------------------------ CUSTOM UART SERVICE ------------------------*/
-    #define CFG_BLE_UART                               1
-    #define CFG_BLE_UART_BRIDGE                        1
-    #define CFG_BLE_UART_UUID_BASE                     "\x6E\x40\x00\x00\xB5\xA3\xF3\x93\xE0\xA9\xE5\x0E\x24\xDC\xCA\x9E"
 /*=========================================================================*/
 
 
@@ -175,13 +152,6 @@
     #if CFG_BLE_TX_POWER_LEVEL != -40 && CFG_BLE_TX_POWER_LEVEL != -20 && CFG_BLE_TX_POWER_LEVEL != -16 && CFG_BLE_TX_POWER_LEVEL != -12 && CFG_BLE_TX_POWER_LEVEL != -8  && CFG_BLE_TX_POWER_LEVEL != -4  && CFG_BLE_TX_POWER_LEVEL != 0   && CFG_BLE_TX_POWER_LEVEL != 4
         #error "CFG_BLE_TX_POWER_LEVEL must be -40, -20, -16, -12, -8, -4, 0 or 4"
     #endif    
-    
-    #if CFG_BLE_IBEACON
-      #if CFG_PROTOCOL
-        /* ToDo: Refactor later to enable CFG_PROTOCOL to control iBeacon */
-        #error "CFG_BLE_IBEACON can not be used with other services (CFG_PROTOCOL)"
-      #endif
-    #endif
 /*=========================================================================*/
 
 #endif /* _PROJECTCONFIG_H_ */

@@ -15,40 +15,47 @@ Mandatory Tools
 
 The following tools are required regardless of the toolchain you are using (GNU Tools or Keil uVision):
 
-- [Segger J-Link Drivers (v4.80 for example)](http://www.segger.com/jlink-software.html)
-- **S110 SoftDevice** (v5.2.1) (available after registering your nRF51822 board on [Nordic's website](http://www.nordicsemi.com/))
-
-Downloaded and install the J-Link drivers if you don't already have a recent copy installed, and then download the S110 SoftDevice, which will be placed in an appropriate folder in this codebase (see below for the exact location).
-  
-Optional Tools
---------------
-
+- [Segger J-Link Drivers](http://www.segger.com/jlink-software.html)
 - The **nRF51822 SDK** (available after registering your nRF51822 board on [Nordic's website](http://www.nordicsemi.com/))
+- **S110 SoftDevice** (v6.0.0) (available after registering your nRF51822 board on [Nordic's website](http://www.nordicsemi.com/))
 
-The nRF51822 SDK is only mandatory if you want to use Keil uVision, since it includes support files for Keil (v4.xx only, v5.xx is not yet supported).
-
-If you only plan on using GNU tool and the GNU/GCC toolchain this is an optional download since we have already included a copy of the SDK in the codebase.  The SDK also includes the **nrfjprog.exe** utility which allows you to program the flash from the command-line, but this utility has also been included in the codebase at '/tools/Windows/nordic'.
-
-If you do install the SDK, **be sure to use the Windows installer for this rather than the .zip file**, since there are several steps in the installation process that aren't handled by the .zip file!
+**Be sure to use the Windows installer for the SDK rather than the .zip file**, since there are several steps in the installation process that aren't handled by the .zip file!
 
 Installation Order
 ------------------
 
 You **MUST** install the J-Link drivers **BEFORE** installing the nRF51822 SDK or you will have problems with path locations looking for the JLinkARM.dll when using the nrfjprog.exe utility!  This utility uses the J-Link .dll, and is required to program the flash from the command-line.  If you run into this problem, try uninstalling the SDK, reinstall the J-Link drivers and then re-install the Nordic SDK.
 
-Adding the SoftDevice to the Codebase
--------------------------------------
+Optional Tools
+--------------
 
-The SoftDevice must be unzipped an placed in the /lib/softdevice/* folder, and shown below. This allows multiple versions of the SoftDevice to co-exist in the codebase, and each Makefile can point to the appropriate header files for the softdevice used by that project:
+This codebase includes the **nrfjprog.exe** utility from Nordic (/tools/Windows/nordic) which allows you to program the flash from the command-line.
+
+Adding the SoftDevice and SDK to the Codebase
+---------------------------------------------
+
+The SoftDevice must be unzipped and placed in the /lib/softdevice/* folder, and shown below. This allows multiple versions of the SoftDevice to co-exist in the codebase, and each Makefile can point to the appropriate header files for the softdevice used by that project:
 
 ```
-  [projfolder]/lib/softdevice/s110_nrf51822_5.2.1/s110_nrf51822_5.2.1_softdevice.hex
+  [projfolder]/lib/softdevice/s110_nrf51822_6.0.0/s110_nrf51822_6.0.0_softdevice.hex
 ```
 
 Make sure that you also include the matching SoftDevice header files, which will normally go in the folder below:
 
 ```
-  [projfolder]/lib/softdevice/s110_nrf51822_5.2.1/s110_nrf51822_5.2.1/s110_nrf51822_5.2.1_API/include
+  [projfolder]/lib/softdevice/s110_nrf51822_6.0.0/s110_nrf51822_6.0.0/s110_nrf51822_6.0.0_API/include
+```
+
+Similarly, the SDK files must be placed in the following folder, which allows you to maintain several versions of the SDK across different projects if necessary:
+
+```
+  [projfolder]/lib/sdk/nRF51_SDK_v5.1.0.36092/s110_nrf51822_6.0.0_softdevice.hex
+```
+
+The makefiles are located in the following folder, and reference makefiles are included in the default codebase as a reference.  You will probably want to replace the default files in this folder from Nordic with the updated versions provided in this codbase:
+
+```
+  [projfolder]/lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/Source/templates/gcc
 ```
 
 GNU Build Tools
@@ -57,13 +64,17 @@ GNU Build Tools
 If you don't already have a valid GNU toolchain and/or supporting build tools installed (make, etc.), we recommend using the following tools with the nRF51822 on Windows:
 
 - [GNU Tools for ARM Embedded Processors 4.8-2013-q4](https://launchpad.net/gcc-arm-embedded/4.8/4.8-2013-q4-major)
-- [Coreutils for Windows 5.3.0](http://gnuwin32.sourceforge.net/packages/coreutils.htm)
-- [Make for Windows 3.81](http://gnuwin32.sourceforge.net/packages/make.htm)
+- [Coreutils for Windows 5.3.0*](http://gnuwin32.sourceforge.net/packages/coreutils.htm)
+- [Make for Windows 3.81*](http://gnuwin32.sourceforge.net/packages/make.htm)
+
+*IMPORTANT NOTE*: When installing 'GNU Tools for ARM Embedded Processors', be sure to install the toolchain in a folder *that doesn't contain any spaces or special characters*.  This is important to avoid problems with the makefiles and compilation process. For example, you might want to consider installing everything in 'C:\ARM\4.8_2013q4'.
+
+*You can also try a package like [mingw](http://www.mingw.org/) to provide the required build tools on Windows.
 
 Adding GNU Build Tools to %PATH%
 --------------------------------
 
-To access the above tools once they are installed, you need to add the installation folder to the %PATH% environment variable.  
+To access the above tools once they are installed, you need to add the installation folder to the %PATH% environment variable.
 
 Depending on your system and installation folder, the location that you need to add to %PATH% should resemble the following:
 
@@ -81,7 +92,7 @@ This file needs to be updated with the folder where you installed the GNU ARM to
 If you used the toolchain mentionned above, your config settings should resemble the following values:
 
 ```
-  GNU_INSTALL_ROOT := C:/Program Files (x86)/GNU Tools ARM Embedded/4.8 2013q4/
+  GNU_INSTALL_ROOT := C:/ARM/4.8_2013q4
   GNU_VERSION := 4.8.3
   GNU_PREFIX := arm-none-eabi
 ```

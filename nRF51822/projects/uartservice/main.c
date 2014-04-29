@@ -3,8 +3,9 @@
     @file     main.c
 */
 /**************************************************************************/
-#include "common.h"
-#include "board.h"
+#include "projectconfig.h"
+#include "common/common.h"
+#include "boards/board.h"
 #include "btle.h"
 #include "nrf_gpiote.h"
 #include "nrf_gpio.h"
@@ -78,6 +79,12 @@ void boardButtonCallback(uint8_t button_num)
   }
 }
 
+/**************************************************************************/
+/*!
+    @brief  This callback fires every time an 'indicate' passes or fails
+            in the UART service
+*/
+/**************************************************************************/
 void uart_service_indicate_callback(bool is_succeeded)
 {
   if ( is_succeeded )
