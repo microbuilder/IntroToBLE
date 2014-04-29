@@ -27,9 +27,6 @@
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF
 //--------------------------------------------------------------------+
-// standard service UUID to driver offset
-#define UUID2OFFSET(uuid)   ((uuid)-0x1800)
-
 btle_service_t btle_service[] =
 {
     {
@@ -56,20 +53,6 @@ btle_service_t btle_service[] =
 
 enum {
   SERVICE_COUNT = sizeof(btle_service) / sizeof(btle_service_t)
-};
-
-btle_service_custom_driver_t btle_service_custom_driver[] =
-{
-    {
-        .uuid_base         = CFG_BLE_UART_UUID_BASE,
-        .service_uuid.uuid = BLE_UART_UUID_PRIMARY_SERVICE,
-        .init              = uart_service_init,
-        .event_handler     = uart_service_handler
-    },
-};
-
-enum {
-  BTLE_SERVICE_CUSTOM_MAX = sizeof(btle_service_custom_driver) / sizeof(btle_service_custom_driver_t)
 };
 
 //--------------------------------------------------------------------+
@@ -112,7 +95,7 @@ error_t btle_init(void)
   {
     btle_service_t * p_service = &btle_service[sid];
 
-    // add the custom UUID to stack if it is non standard service
+    /*------------- Add the custom UUID to stack if it is non standard-------------*/
     if ( is_all_zeros(p_service->uuid_base, 16) )
     {
       p_service->uuid_type = BLE_UUID_TYPE_BLE; // standard type
@@ -139,22 +122,7 @@ error_t btle_init(void)
     }
   }
 
-  /*------------- Custom Services -------------*/
-//  for(uint16_t i=0; i<BTLE_SERVICE_CUSTOM_MAX; i++)
-//  {
-//    if ( btle_service_custom_driver[i].init != NULL )
-//    {
-//      /* add the custom UUID to stack */
-//      uint8_t uuid_type = custom_add_uuid_base(btle_service_custom_driver[i].uuid_base);
-//      ASSERT( uuid_type >= BLE_UUID_TYPE_VENDOR_BEGIN, ERROR_INVALIDPARAMETER);
-//
-//      btle_service_custom_driver[i].service_uuid.type = uuid_type; /* store for later use in advertising */
-//      ASSERT_STATUS( btle_service_custom_driver[i].init(uuid_type) );
-//    }
-//  }
-//  btle_advertising_init(NULL, 0, btle_service_custom_driver, BTLE_SERVICE_CUSTOM_MAX);
-
-  btle_advertising_init(NULL, 0, NULL, 0);
+  btle_advertising_init(btle_service, SERVICE_COUNT);
   btle_advertising_start();
 
   return ERROR_NONE;
@@ -187,15 +155,6 @@ static void btle_handler(ble_evt_t * p_ble_evt)
 //    if ( btle_service_driver[i].event_handler != NULL )
 //    {
 //      btle_service_driver[i].event_handler(p_ble_evt);
-//    }
-//  }
-
-  /*------------- Custom Service Handler -------------*/
-//  for(uint16_t i=0; i<BTLE_SERVICE_CUSTOM_MAX; i++)
-//  {
-//    if ( btle_service_custom_driver[i].event_handler != NULL )
-//    {
-//      btle_service_custom_driver[i].event_handler(p_ble_evt);
 //    }
 //  }
 

@@ -79,9 +79,9 @@ typedef struct {
 
 typedef struct {
   uint8_t uuid_base[16]; // all zero means standard service
-  uint16_t uuid;
+  uint16_t uuid;  // primary service uuid
 
-  uint8_t  uuid_type; //
+  uint8_t  uuid_type; // standard = 1, custom = 2, invalid 0
   uint16_t handle; // service handle
 
   uint8_t char_count; // number of characteristics
