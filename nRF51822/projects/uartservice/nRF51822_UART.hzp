@@ -48,6 +48,7 @@
       <file file_name="custom_helper.c" />
       <folder Name="boards">
         <file file_name="boards/board_pca10001.c" />
+        <file file_name="boards/board_pca10001.h" />
       </folder>
       <file file_name="projectconfig.h" />
     </folder>

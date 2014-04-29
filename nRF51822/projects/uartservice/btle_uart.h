@@ -47,6 +47,8 @@
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF
 //--------------------------------------------------------------------+
+#define BLE_UART_BRIDGE               1
+#define BLE_UART_UUID_BASE            "\x6E\x40\x00\x00\xB5\xA3\xF3\x93\xE0\xA9\xE5\x0E\x24\xDC\xCA\x9E"
 #define BLE_UART_MAX_LENGTH           20
 #define BLE_UART_UUID_PRIMARY_SERVICE 1
 #define BLE_UART_UUID_IN              3

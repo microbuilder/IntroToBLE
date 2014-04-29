@@ -88,7 +88,7 @@ enum {
 btle_service_custom_driver_t btle_service_custom_driver[] =
 {
     {
-        .uuid_base         = CFG_BLE_UART_UUID_BASE,
+        .uuid_base         = BLE_UART_UUID_BASE,
         .service_uuid.uuid = BLE_UART_UUID_PRIMARY_SERVICE,
         .init              = uart_service_init,
         .event_handler     = uart_service_handler
