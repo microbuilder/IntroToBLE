@@ -64,10 +64,10 @@ GNU Build Tools
 If you don't already have a valid GNU toolchain and/or supporting build tools installed (make, etc.), we recommend using the following tools with the nRF51822 on Windows:
 
 - [GNU Tools for ARM Embedded Processors 4.8-2013-q4](https://launchpad.net/gcc-arm-embedded/4.8/4.8-2013-q4-major)
-- [Coreutils for Windows 5.3.0](http://gnuwin32.sourceforge.net/packages/coreutils.htm)
-- [Make for Windows 3.81](http://gnuwin32.sourceforge.net/packages/make.htm)
+- [Coreutils for Windows 5.3.0*](http://gnuwin32.sourceforge.net/packages/coreutils.htm)
+- [Make for Windows 3.81*](http://gnuwin32.sourceforge.net/packages/make.htm)
 
-You can also try a package like [mingw](http://www.mingw.org/) to provide the required build tools on Windows.
+*You can also try a package like [mingw](http://www.mingw.org/) to provide the required build tools on Windows.
 
 Adding GNU Build Tools to %PATH%
 --------------------------------
