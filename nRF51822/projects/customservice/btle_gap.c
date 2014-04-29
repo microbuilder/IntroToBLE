@@ -106,6 +106,39 @@ error_t btle_gap_init(void)
   return ERROR_NONE;
 }
 
+void btle_gap_handler(ble_evt_t * p_ble_evt)
+{
+  static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;
+  switch (p_ble_evt->header.evt_id)
+  {
+    case BLE_GAP_EVT_CONNECTED:
+      m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
+    break;
+
+    case BLE_GAP_EVT_DISCONNECTED:
+      m_conn_handle = BLE_CONN_HANDLE_INVALID;
+    break;
+
+    case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+    {
+      ble_gap_sec_params_t sec_params =
+      {
+          .timeout      = 30                   , /**< Timeout for Pairing Request or Security Request (in seconds). */
+          .bond         = 1                    , /**< Perform bonding. */
+          .mitm         = 0                    , /**< Man In The Middle protection not required. */
+          .io_caps      = BLE_GAP_IO_CAPS_NONE , /**< No I/O capabilities. */
+          .oob          = 0                    , /**< Out Of Band data not available. */
+          .min_key_size = 7                    , /**< Minimum encryption key size. */
+          .max_key_size = 16                     /**< Maximum encryption key size. */
+      };
+      ASSERT_STATUS_RET_VOID ( sd_ble_gap_sec_params_reply(m_conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_params) );
+    }
+    break;
+
+    default: break;
+  }
+}
+
 /**************************************************************************/
 /*!
     @brief      Converts msecs to an integer representing 1.25ms units

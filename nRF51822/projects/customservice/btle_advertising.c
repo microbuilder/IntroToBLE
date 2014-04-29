@@ -90,20 +90,20 @@ error_t btle_advertising_init(btle_service_driver_t const std_service[], uint16_
   uint16_t uuid_count = 0;
 
   /* Standard Services are added first (higher priority), modify to your own need if required */
-  if (std_count > 0)
-  {
-    byte_left -= ADV_FIELD_HEADER_LENGTH;
-    for (uint16_t i=0; (i < std_count) && (byte_left > 0) ; i++)
-    {
-      if (std_service[i].init != NULL)
-      {
-        adv_uuids[uuid_count].uuid = i+0x1800;
-        adv_uuids[uuid_count].type = BLE_UUID_TYPE_BLE;
-        ++uuid_count;
-        byte_left -= 2; // 16-bit uuid
-      }
-    }
-  }
+//  if (std_count > 0)
+//  {
+//    byte_left -= ADV_FIELD_HEADER_LENGTH;
+//    for (uint16_t i=0; (i < std_count) && (byte_left > 0) ; i++)
+//    {
+//      if (std_service[i].init != NULL)
+//      {
+//        adv_uuids[uuid_count].uuid = i+0x1800;
+//        adv_uuids[uuid_count].type = BLE_UUID_TYPE_BLE;
+//        ++uuid_count;
+//        byte_left -= 2; // 16-bit uuid
+//      }
+//    }
+//  }
 
   /* Custom Services are added later (lower priority), modify to your own need if required */
   if (custom_count > 0)

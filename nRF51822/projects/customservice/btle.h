@@ -67,6 +67,27 @@ typedef struct {
   ble_uuid_t service_uuid;
 }btle_service_custom_driver_t;
 
+typedef struct {
+  uint16_t uuid;
+  ble_gatt_char_props_t properties;
+  uint8_t  len_min;
+  uint8_t  len_max;
+  uint8_t const * init_value;
+
+  ble_gatts_char_handles_t handle; // characteristic handle
+}btle_characteristic_t;
+
+typedef struct {
+  uint8_t uuid_base[16]; // all zero means standard service
+  uint16_t uuid;
+
+  uint8_t  uuid_type; //
+  uint16_t handle; // service handle
+
+  uint8_t char_count; // number of characteristics
+  btle_characteristic_t char_pool[5]; // flexible array member
+}btle_service_t;
+
 // https://developer.bluetooth.org/gatt/units/Pages/default.aspx
 typedef enum ble_gatt_unit_e
 {

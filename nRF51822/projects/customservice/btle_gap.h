@@ -49,7 +49,7 @@
 #endif
 
 error_t btle_gap_init(void);
-
+void btle_gap_handler(ble_evt_t * p_ble_evt);
 
 #ifdef __cplusplus
  }

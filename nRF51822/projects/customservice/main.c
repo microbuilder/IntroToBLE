@@ -79,6 +79,8 @@ int main(void)
   ASSERT_STATUS ( app_timer_create(&uart_timer_id, APP_TIMER_MODE_REPEATED, uart_service_bridge_task) );
   ASSERT_STATUS ( app_timer_start (uart_timer_id, APP_TIMER_TICKS(100, CFG_TIMER_PRESCALER), NULL) );
 
+  ASSERT_STATUS( app_button_enable() );
+
   while(true)
   {
   }

@@ -30,59 +30,32 @@
 // standard service UUID to driver offset
 #define UUID2OFFSET(uuid)   ((uuid)-0x1800)
 
-btle_service_driver_t const btle_service_driver[] =
+btle_service_t btle_service[] =
 {
-    #if CFG_BLE_DEVICE_INFORMATION
-    [UUID2OFFSET(BLE_UUID_DEVICE_INFORMATION_SERVICE)] =
     {
-        .init          = device_information_init,
-        .event_handler = NULL,
-    },
-    #endif
-
-    #if CFG_BLE_BATTERY
-    [UUID2OFFSET(BLE_UUID_BATTERY_SERVICE)] =
-    {
-        .init          = battery_init,
-        .event_handler = battery_handler,
-    },
-    #endif
-
-    #if CFG_BLE_HEART_RATE
-//    [UUID2OFFSET(BLE_UUID_HEART_RATE_SERVICE)] =
-//    {
-//        .init          = heart_rate_init,
-//        .event_handler = heart_rate_handler,
-//    },
-    #endif
-
-    #if CFG_BLE_IMMEDIATE_ALERT
-    [UUID2OFFSET(BLE_UUID_IMMEDIATE_ALERT_SERVICE)] =
-    {
-        .init          = immediate_alert_init,
-        .event_handler = immediate_alert_handler,
-    },
-    #endif
-
-    #if CFG_BLE_TX_POWER
-    [UUID2OFFSET(BLE_UUID_TX_POWER_SERVICE)] =
-    {
-        .init          = tx_power_init,
-        .event_handler = NULL,
-    },
-    #endif
-
-    #if CFG_BLE_LINK_LOSS
-    [UUID2OFFSET(BLE_UUID_LINK_LOSS_SERVICE)] =
-    {
-        .init          = link_loss_init,
-        .event_handler = link_loss_handler,
-    },
-    #endif
+        .uuid       = BLE_UUID_HEART_RATE_SERVICE,
+        .char_count = 2,
+        .char_pool  =
+        {
+            {
+                .uuid = BLE_UUID_HEART_RATE_MEASUREMENT_CHAR,
+                .properties = { .notify = 1 },
+                .len_min = 2,
+                .len_max = 2
+            },
+            {
+                .uuid = BLE_UUID_BODY_SENSOR_LOCATION_CHAR,
+                .properties = { .read = 1 },
+                .len_min = 1,
+                .len_max = 1,
+                .init_value = (uint8_t []) { 3 }
+            }
+        }
+    }
 };
 
 enum {
-  BTLE_SERVICE_MAX = sizeof(btle_service_driver) / sizeof(btle_service_driver_t)
+  SERVICE_COUNT = sizeof(btle_service) / sizeof(btle_service_t)
 };
 
 btle_service_custom_driver_t btle_service_custom_driver[] =
@@ -111,6 +84,14 @@ static error_t bond_manager_init(void);
 static void btle_handler(ble_evt_t * p_ble_evt);
 static void btle_soc_event_handler(uint32_t sys_evt);
 
+static inline bool is_all_zeros(uint8_t arr[], uint32_t count) ATTR_ALWAYS_INLINE ATTR_PURE;
+static inline bool is_all_zeros(uint8_t arr[], uint32_t count)
+{
+  for(uint32_t i=0; i<count; i++) if (arr[i] != 0) return false;
+
+  return true;
+}
+
 /**************************************************************************/
 /*!
     @brief      Initialises BTLE and the underlying HW/SoftDevice
@@ -127,30 +108,53 @@ error_t btle_init(void)
   bond_manager_init();
   btle_gap_init();
 
-  /*------------- Standard Services -------------*/
-  for(uint16_t i=0; i<BTLE_SERVICE_MAX; i++)
+  for(uint8_t sid=0; sid<SERVICE_COUNT; sid++)
   {
-    if ( btle_service_driver[i].init != NULL )
+    btle_service_t * p_service = &btle_service[sid];
+
+    // add the custom UUID to stack if it is non standard service
+    if ( is_all_zeros(p_service->uuid_base, 16) )
     {
-      ASSERT_STATUS( btle_service_driver[i].init() );
+      p_service->uuid_type = BLE_UUID_TYPE_BLE; // standard type
+    }
+    else
+    {
+      p_service->uuid_type = custom_add_uuid_base(p_service->uuid_base);
+      ASSERT( p_service->uuid_type >= BLE_UUID_TYPE_VENDOR_BEGIN, ERROR_INVALIDPARAMETER);
+    }
+
+    /*------------- Add primary service -------------*/
+    ble_uuid_t service_uuid = { .type = p_service->uuid_type, .uuid = p_service->uuid };
+    ASSERT_STATUS( sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &service_uuid, &p_service->handle) );
+
+    /*------------- Add all characteristics -------------*/
+    for(uint8_t cid=0; cid<p_service->char_count; cid++)
+    {
+      btle_characteristic_t * p_char = &p_service->char_pool[cid];
+      ble_uuid_t char_uuid = { .type = p_service->uuid_type, .uuid = p_char->uuid };
+
+      ASSERT_STATUS(custom_add_in_characteristic(p_service->handle, &char_uuid, p_char->properties,
+                                                 p_char->init_value, p_char->len_min, p_char->len_max,
+                                                 &p_char->handle) );
     }
   }
 
   /*------------- Custom Services -------------*/
-  for(uint16_t i=0; i<BTLE_SERVICE_CUSTOM_MAX; i++)
-  {
-    if ( btle_service_custom_driver[i].init != NULL )
-    {
-      /* add the custom UUID to stack */
-      uint8_t uuid_type = custom_add_uuid_base(btle_service_custom_driver[i].uuid_base);
-      ASSERT( uuid_type >= BLE_UUID_TYPE_VENDOR_BEGIN, ERROR_INVALIDPARAMETER);
+//  for(uint16_t i=0; i<BTLE_SERVICE_CUSTOM_MAX; i++)
+//  {
+//    if ( btle_service_custom_driver[i].init != NULL )
+//    {
+//      /* add the custom UUID to stack */
+//      uint8_t uuid_type = custom_add_uuid_base(btle_service_custom_driver[i].uuid_base);
+//      ASSERT( uuid_type >= BLE_UUID_TYPE_VENDOR_BEGIN, ERROR_INVALIDPARAMETER);
+//
+//      btle_service_custom_driver[i].service_uuid.type = uuid_type; /* store for later use in advertising */
+//      ASSERT_STATUS( btle_service_custom_driver[i].init(uuid_type) );
+//    }
+//  }
+//  btle_advertising_init(NULL, 0, btle_service_custom_driver, BTLE_SERVICE_CUSTOM_MAX);
 
-      btle_service_custom_driver[i].service_uuid.type = uuid_type; /* store for later use in advertising */
-      ASSERT_STATUS( btle_service_custom_driver[i].init(uuid_type) );
-    }
-  }
-
-  btle_advertising_init(btle_service_driver, BTLE_SERVICE_MAX, btle_service_custom_driver, BTLE_SERVICE_CUSTOM_MAX);
+  btle_advertising_init(NULL, 0, NULL, 0);
   btle_advertising_start();
 
   return ERROR_NONE;
@@ -173,70 +177,51 @@ static void btle_soc_event_handler(uint32_t sys_evt)
 static void btle_handler(ble_evt_t * p_ble_evt)
 {
   //------------- library service handler -------------//
+  btle_gap_handler(p_ble_evt);
   ble_bondmngr_on_ble_evt(p_ble_evt);
   ble_conn_params_on_ble_evt(p_ble_evt);
 
   /*------------- Standard Service Handler -------------*/
-  for(uint16_t i=0; i<BTLE_SERVICE_MAX; i++)
-  {
-    if ( btle_service_driver[i].event_handler != NULL )
-    {
-      btle_service_driver[i].event_handler(p_ble_evt);
-    }
-  }
+//  for(uint16_t i=0; i<BTLE_SERVICE_MAX; i++)
+//  {
+//    if ( btle_service_driver[i].event_handler != NULL )
+//    {
+//      btle_service_driver[i].event_handler(p_ble_evt);
+//    }
+//  }
 
   /*------------- Custom Service Handler -------------*/
-  for(uint16_t i=0; i<BTLE_SERVICE_CUSTOM_MAX; i++)
-  {
-    if ( btle_service_custom_driver[i].event_handler != NULL )
-    {
-      btle_service_custom_driver[i].event_handler(p_ble_evt);
-    }
-  }
+//  for(uint16_t i=0; i<BTLE_SERVICE_CUSTOM_MAX; i++)
+//  {
+//    if ( btle_service_custom_driver[i].event_handler != NULL )
+//    {
+//      btle_service_custom_driver[i].event_handler(p_ble_evt);
+//    }
+//  }
 
   /*------------- Application Specific Handler (modify to your own need) -------------*/
-  static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;
   switch (p_ble_evt->header.evt_id)
   {
     case BLE_GAP_EVT_CONNECTED:
-      m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
-      ASSERT_STATUS_RET_VOID( app_button_enable() );
+      // blink some LED when connected
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
       // Since we are not in a connection and have not started advertising, store bonds
       ASSERT_STATUS_RET_VOID ( ble_bondmngr_bonded_centrals_store() );
-      m_conn_handle = BLE_CONN_HANDLE_INVALID;
-      btle_advertising_start(); // TODO use a power-efficient advertising scheme (fast, slow, sleep)
-    break;
-
-    case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-    {
-      ble_gap_sec_params_t sec_params =
-      {
-          .timeout      = 30                   , /**< Timeout for Pairing Request or Security Request (in seconds). */
-          .bond         = 1                    , /**< Perform bonding. */
-          .mitm         = 0                    , /**< Man In The Middle protection not required. */
-          .io_caps      = BLE_GAP_IO_CAPS_NONE , /**< No I/O capabilities. */
-          .oob          = 0                    , /**< Out Of Band data not available. */
-          .min_key_size = 7                    , /**< Minimum encryption key size. */
-          .max_key_size = 16                     /**< Maximum encryption key size. */
-      };
-      ASSERT_STATUS_RET_VOID ( sd_ble_gap_sec_params_reply(m_conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_params) );
-    }
+      btle_advertising_start();
     break;
 
     case BLE_GAP_EVT_TIMEOUT:
       if (p_ble_evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISEMENT)
       {
-        btle_advertising_start(); // TODO use a power-efficient advertising scheme (fast, slow, sleep)
+        btle_advertising_start();
       }
     break;
 
     case BLE_GATTC_EVT_TIMEOUT:
     case BLE_GATTS_EVT_TIMEOUT:
       // Disconnect on GATT Server and Client timeout events.
-//      ASSERT_STATUS_RET_VOID ( sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION) ); TODO find in proximity example
     break;
 
     default: break;
