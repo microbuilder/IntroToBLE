@@ -67,6 +67,8 @@ If you don't already have a valid GNU toolchain and/or supporting build tools in
 - [Coreutils for Windows 5.3.0*](http://gnuwin32.sourceforge.net/packages/coreutils.htm)
 - [Make for Windows 3.81*](http://gnuwin32.sourceforge.net/packages/make.htm)
 
+*IMPORTANT NOTE*: When installing 'GNU Tools for ARM Embedded Processors', be sure to install the toolchain in a folder *that doesn't contain any spaces or special characters*.  This is important to avoid problems with the makefiles and compilation process. For example, you might want to consider installing everything in 'C:\ARM\4.8_2013q4'.
+
 *You can also try a package like [mingw](http://www.mingw.org/) to provide the required build tools on Windows.
 
 Adding GNU Build Tools to %PATH%
@@ -90,7 +92,7 @@ This file needs to be updated with the folder where you installed the GNU ARM to
 If you used the toolchain mentionned above, your config settings should resemble the following values:
 
 ```
-  GNU_INSTALL_ROOT := C:/Program Files (x86)/GNU Tools ARM Embedded/4.8 2013q4/
+  GNU_INSTALL_ROOT := C:/ARM/4.8_2013q4
   GNU_VERSION := 4.8.3
   GNU_PREFIX := arm-none-eabi
 ```
