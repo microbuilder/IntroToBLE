@@ -3,7 +3,7 @@ UART Service
 
 This project shows how custom services and characteristics can be defined and manipulated on the nRF51822.
 
-A sample 'UART' type service with two characteristics as follows:
+A sample 'UART' type service with two characteristics is defined as follows:
 
 - The first characteristic acts as a **TXD** line, with **indicate** enabled, which allows us to know definitively if the transmitted data was received or not.
 
