@@ -53,49 +53,6 @@ typedef struct
 
 static uart_srvc_t m_uart_srvc;
 
-#if BLE_UART_BRIDGE
-/**************************************************************************/
-/*!
-    @brief      Callback function for the UART bridge to send incoming data
-                (arriving over the air) out to the HW UART interface
-
-    @param[in]  data    Pointer to the data received
-    @param[in]  length  Number of bytes received
-*/
-/**************************************************************************/
-void uart_service_received_callback(uint8_t * data, uint16_t length)
-{
-  for(uint16_t i=0; i<length; i++)
-  {
-    app_uart_put( data[i] );
-  }
-}
-#endif
-
-/**************************************************************************/
-/*!
-    @brief      Task handler when the UART bridge functionality is enabled,
-                reading data from the HW UART interface to transmit over the
-                air.
-
-    @param[in]  p_context
-*/
-/**************************************************************************/
-void uart_service_bridge_task(void* p_context)
-{
-  uint8_t buffer[BLE_UART_MAX_LENGTH];
-  uint8_t i=0;
-  while ( NRF_SUCCESS == app_uart_get(&buffer[i]) && i < BLE_UART_MAX_LENGTH )
-  {
-    i++;
-  }
-
-  if( i > 0)
-  {
-    (void) uart_service_send(buffer, i);
-  }
-}
-
 /**************************************************************************/
 /*!
     @brief      Initialises the UART service, adding it to the SoftDevice
@@ -229,4 +186,65 @@ error_t uart_service_send(uint8_t p_data[], uint16_t length)
   ASSERT_STATUS( sd_ble_gatts_hvx(m_uart_srvc.conn_handle, &hvx_params) );
 
   return ERROR_NONE;
+}
+
+#if BLE_UART_BRIDGE
+/**************************************************************************/
+/*!
+    @brief      Callback function for the UART bridge to send incoming data
+                (arriving over the air) out to the HW UART interface
+
+    @param[in]  data    Pointer to the data received
+    @param[in]  length  Number of bytes received
+*/
+/**************************************************************************/
+void uart_service_received_callback(uint8_t * data, uint16_t length)
+{
+  for(uint16_t i=0; i<length; i++)
+  {
+    app_uart_put( data[i] );
+  }
+}
+#endif
+
+/**************************************************************************/
+/*!
+    @brief  This callback fires every time an 'indicate' passes or fails
+            in the UART service
+*/
+/**************************************************************************/
+void uart_service_indicate_callback(bool is_succeeded)
+{
+  if ( is_succeeded )
+  {
+    printf("confirmation received\n");
+  }
+  else
+  {
+    printf("confirmation timeout\n");
+  }
+}
+
+/**************************************************************************/
+/*!
+    @brief      Task handler when the UART bridge functionality is enabled,
+                reading data from the HW UART interface to transmit over the
+                air.
+
+    @param[in]  p_context
+*/
+/**************************************************************************/
+void uart_service_bridge_task(void* p_context)
+{
+  uint8_t buffer[BLE_UART_MAX_LENGTH];
+  uint8_t i=0;
+  while ( NRF_SUCCESS == app_uart_get(&buffer[i]) && i < BLE_UART_MAX_LENGTH )
+  {
+    i++;
+  }
+
+  if( i > 0)
+  {
+    (void) uart_service_send(buffer, i);
+  }
 }
