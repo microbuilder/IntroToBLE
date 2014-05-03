@@ -36,34 +36,23 @@
 
 #include "common/common.h"
 
-//--------------------------------------------------------------------+
-// INCLUDE
-//--------------------------------------------------------------------+
 #include "boards/board.h"
 #include "btle_uart.h"
 #include "custom_helper.h"
 #include "ble_srv_common.h"
 
-//--------------------------------------------------------------------+
-// INTERNAL OBJECT & FUNCTION DECLARATION
-//--------------------------------------------------------------------+
-typedef struct 
+typedef struct
 {
   uint16_t                  service_handle;
   uint16_t                  conn_handle;
   uint8_t                   uuid_type;
-
   ble_gatts_char_handles_t  in_handle;
   ble_gatts_char_handles_t  out_handle;
-
-  bool  is_indication_waiting;
+  bool                      is_indication_waiting;
 } uart_srvc_t;
 
 static uart_srvc_t m_uart_srvc;
 
-//--------------------------------------------------------------------+
-// IMPLEMENTATION
-//--------------------------------------------------------------------+
 #if BLE_UART_BRIDGE
 /**************************************************************************/
 /*!
@@ -123,9 +112,7 @@ error_t uart_service_init(uint8_t uuid_base_type)
   m_uart_srvc.conn_handle = BLE_CONN_HANDLE_INVALID;
   m_uart_srvc.uuid_type = uuid_base_type;
 
-  /* ---------------------------------------------------------------------- */
-  /* Add the Primary Service                                                */
-  /* ---------------------------------------------------------------------- */
+  /* Add the primary service first ... */
   ble_uuid_t ble_uuid =
   {
      .type = m_uart_srvc.uuid_type,
@@ -133,9 +120,7 @@ error_t uart_service_init(uint8_t uuid_base_type)
   };
   ASSERT_STATUS( sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &ble_uuid, &m_uart_srvc.service_handle) );
 
-  /* ---------------------------------------------------------------------- */
-  /* Add Characteristics                                                    */
-  /* ---------------------------------------------------------------------- */
+  /* ... then add the individual characteristics */
   ble_uuid.uuid = BLE_UART_UUID_IN;
   ASSERT_STATUS(custom_add_in_characteristic(m_uart_srvc.service_handle,
                                              &ble_uuid, (ble_gatt_char_props_t) {.indicate = 1},
@@ -173,23 +158,28 @@ void uart_service_handler(ble_evt_t * p_ble_evt)
       m_uart_srvc.conn_handle = BLE_CONN_HANDLE_INVALID;
     break;
 
-    case BLE_GATTS_EVT_HVC: // Indication confirmation received from peer
+    /* Capture the 'indicate' confirmation from the central here */
+    case BLE_GATTS_EVT_HVC:
       if( m_uart_srvc.in_handle.value_handle == p_ble_evt->evt.gatts_evt.params.hvc.handle )
       {
+        /* Clear the flag and fire the indicate callback with success */
         m_uart_srvc.is_indication_waiting = false;
         uart_service_indicate_callback(true);
       }
     break;
 
+    /* The is no attribute handle in timeout events, so we need to use   */
+    /* is_indication_waiting to know if the timeout is from this service */
     case BLE_GATTS_EVT_TIMEOUT:
-      // timeout event does not have attribute handle --> use is_indication_waiting to determine if timeout is caused by this
       if ( m_uart_srvc.is_indication_waiting )
       {
-        m_uart_srvc.is_indication_waiting = false; // clear
+        /* Clear the flag and fire the indicate callback with failure */
+        m_uart_srvc.is_indication_waiting = false;
         uart_service_indicate_callback(false);
       }
     break;
 
+    /* Handle incoming data on the RXD characteristic */
     case BLE_GATTS_EVT_WRITE:
     {
       ble_gatts_evt_write_t * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;

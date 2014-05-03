@@ -44,23 +44,36 @@
 #include "common/common.h"
 #include "ble.h"
 
-//--------------------------------------------------------------------+
-// MACRO CONSTANT TYPEDEF
-//--------------------------------------------------------------------+
-#define BLE_UART_BRIDGE               1
-#define BLE_UART_UUID_BASE            "\x6E\x40\x00\x00\xB5\xA3\xF3\x93\xE0\xA9\xE5\x0E\x24\xDC\xCA\x9E"
-#define BLE_UART_MAX_LENGTH           20
-#define BLE_UART_UUID_PRIMARY_SERVICE 1
-#define BLE_UART_UUID_IN              3
-#define BLE_UART_UUID_OUT             2
+/*=========================================================================
+    UART SERVICE CONFIGURATION
+    -----------------------------------------------------------------------
+    BLE_UART_BRIDGE                   Set this to 1 to enabled the UART
+                                      bridge, which will read characters
+                                      from the HW UART port and push them
+                                      out over the air, and send any
+                                      incoming characters back out on UART
+    BLE_UART_UUID_BASE                The base 128-bit UUID to use for this
+                                      service. Set bytes 3+4 to 0x00.
+    BLE_UART_MAX_LENGTH               The maximum payload length
+    BLE_UART_UUID_PRIMARY_SERVICE     The UUID fragment for the primary
+                                      service (normally 1)
+    BLE_UART_UUID_IN                  The UUID fragment for the TXD char
+    BLE_UART_UUID_OUT                 The UUID fragment for the RXD char
+    -----------------------------------------------------------------------*/
+    #define BLE_UART_BRIDGE                 (1)
+    #define BLE_UART_UUID_BASE              "\x6E\x40\x00\x00\xB5\xA3\xF3\x93\xE0\xA9\xE5\x0E\x24\xDC\xCA\x9E"
+    #define BLE_UART_MAX_LENGTH             (20)
+    #define BLE_UART_UUID_PRIMARY_SERVICE   (1)
+    #define BLE_UART_UUID_IN                (3)
+    #define BLE_UART_UUID_OUT               (2)
+/*=========================================================================*/
 
-error_t uart_service_init(uint8_t uuid_base_type);
-void    uart_service_handler(ble_evt_t * p_ble_evt);
-
-error_t uart_service_send(uint8_t data[], uint16_t length);
-void    uart_service_received_callback(uint8_t * data, uint16_t length) ATTR_WEAK;
-void    uart_service_indicate_callback(bool is_succeeded);
-void    uart_service_bridge_task(void* p_context);
+error_t uart_service_init              ( uint8_t uuid_base_type );
+void    uart_service_handler           ( ble_evt_t * p_ble_evt );
+error_t uart_service_send              ( uint8_t data[], uint16_t length );
+void    uart_service_received_callback ( uint8_t * data, uint16_t length ) ATTR_WEAK;
+void    uart_service_indicate_callback ( bool is_succeeded );
+void    uart_service_bridge_task       ( void* p_context );
 
 #ifdef __cplusplus
  }
