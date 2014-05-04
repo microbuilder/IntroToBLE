@@ -33,7 +33,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-
 #ifndef _BTLE_GAP_H_
 #define _BTLE_GAP_H_
 
@@ -41,9 +40,9 @@
  extern "C" {
 #endif
 
-error_t btle_gap_init(void);
-void btle_gap_handler(ble_evt_t * p_ble_evt);
-uint16_t btle_gap_get_connection(void);
+error_t  btle_gap_init           ( void );
+void     btle_gap_handler        ( ble_evt_t * p_ble_evt );
+uint16_t btle_gap_get_connection ( void );
 
 #ifdef __cplusplus
  }

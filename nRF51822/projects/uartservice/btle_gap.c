@@ -34,39 +34,26 @@
 */
 /**************************************************************************/
 
-/* ---------------------------------------------------------------------- */
-/* INCLUDE				                                                        */
-/* ---------------------------------------------------------------------- */
 #include "common/common.h"
 #include "boards/board.h"
-
 #include "ble_gap.h"
 #include "ble_conn_params.h"
 
-/* ---------------------------------------------------------------------- */
-/* MACRO CONSTANT TYPEDEF                                                 */
-/* ---------------------------------------------------------------------- */
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;
 
-/* ---------------------------------------------------------------------- */
-/* INTERNAL OBJECT & FUNCTION DECLARATION                                 */
-/* ---------------------------------------------------------------------- */
-static inline uint32_t msec_to_1_25msec(uint32_t interval_ms) ATTR_ALWAYS_INLINE ATTR_CONST;
-static void error_callback(uint32_t nrf_error);
-
-/* ---------------------------------------------------------------------- */
-/* IMPLEMENTATION											                                    */
-/* ---------------------------------------------------------------------- */
+static inline uint32_t msec_to_1_25msec ( uint32_t interval_ms ) ATTR_ALWAYS_INLINE ATTR_CONST;
+static void            error_callback   ( uint32_t nrf_error );
 
 /**************************************************************************/
 /*!
     @brief      Initialise GAP in the underlying SoftDevice
 
-    @returns
+    @returns    ERROR_NONE if everything initialised correcty
 */
 /**************************************************************************/
 error_t btle_gap_init(void)
 {
+  /* Set the connection parameters */
   ble_gap_conn_params_t   gap_conn_params =
   {
       .min_conn_interval = msec_to_1_25msec(CFG_GAP_CONNECTION_MIN_INTERVAL_MS) , // in 1.25ms unit
@@ -75,21 +62,23 @@ error_t btle_gap_init(void)
       .conn_sup_timeout  = CFG_GAP_CONNECTION_SUPERVISION_TIMEOUT_MS / 10         // in 10ms unit
   };
 
+  /* Set the security settings (no security at present) */
   ble_gap_conn_sec_mode_t sec_mode;
-  BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode); // no security is needed
+  BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
 
+  /* Set device name, appearance, TX power, etc. */
   ASSERT_STATUS( sd_ble_gap_device_name_set(&sec_mode, (const uint8_t *) CFG_GAP_LOCAL_NAME, strlen(CFG_GAP_LOCAL_NAME)) );
   ASSERT_STATUS( sd_ble_gap_appearance_set(CFG_GAP_APPEARANCE) );
   ASSERT_STATUS( sd_ble_gap_ppcp_set(&gap_conn_params) );
   ASSERT_STATUS( sd_ble_gap_tx_power_set(CFG_BLE_TX_POWER_LEVEL) );
 
-  /*------------- Connection Parameter -------------*/
   enum {
     FIRST_UPDATE_DELAY = APP_TIMER_TICKS(5000, CFG_TIMER_PRESCALER),
     NEXT_UPDATE_DELAY  = APP_TIMER_TICKS(5000, CFG_TIMER_PRESCALER),
     MAX_UPDATE_COUNT   = 3
   };
 
+  /* Set ble_conn_params_init_t params ... */
   ble_conn_params_init_t cp_init =
   {
       .p_conn_params                  = NULL                    ,
@@ -102,16 +91,29 @@ error_t btle_gap_init(void)
       .error_handler                  = error_callback
   };
 
+  /* ... then pass them down to the SD  */
   ASSERT_STATUS ( ble_conn_params_init(&cp_init) );
 
   return ERROR_NONE;
 }
 
+/**************************************************************************/
+/*!
+    @brief      Gets the 16-bit GAP connection handle
+
+    @returns    The 16-bit connection handle
+*/
+/**************************************************************************/
 uint16_t btle_gap_get_connection(void)
 {
   return m_conn_handle;
 }
 
+/**************************************************************************/
+/*!
+    @brief      Callback handler for GAP events
+*/
+/**************************************************************************/
 void btle_gap_handler(ble_evt_t * p_ble_evt)
 {
   switch (p_ble_evt->header.evt_id)
@@ -159,6 +161,11 @@ static inline uint32_t msec_to_1_25msec(uint32_t interval_ms)
   return (interval_ms * 4) / 5 ;
 }
 
+/**************************************************************************/
+/*!
+    @brief      Callback handler when an error occurs
+*/
+/**************************************************************************/
 static void error_callback(uint32_t nrf_error)
 {
   ASSERT_STATUS_RET_VOID( nrf_error );
