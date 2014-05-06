@@ -52,76 +52,18 @@
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF
 //--------------------------------------------------------------------+
-// standard service UUID to driver offset
-#define UUID2OFFSET(uuid)   ((uuid)-0x1800)
-
-btle_service_driver_t const btle_service_driver[] =
-{
-    #if CFG_BLE_DEVICE_INFORMATION
-    [UUID2OFFSET(BLE_UUID_DEVICE_INFORMATION_SERVICE)] =
-    {
-        .init          = device_information_init,
-        .event_handler = NULL,
-    },
-    #endif
-
-    #if CFG_BLE_BATTERY
-    [UUID2OFFSET(BLE_UUID_BATTERY_SERVICE)] =
-    {
-        .init          = battery_init,
-        .event_handler = battery_handler,
-    },
-    #endif
-
-    #if CFG_BLE_HEART_RATE
-//    [UUID2OFFSET(BLE_UUID_HEART_RATE_SERVICE)] =
-//    {
-//        .init          = heart_rate_init,
-//        .event_handler = heart_rate_handler,
-//    },
-    #endif
-
-    #if CFG_BLE_IMMEDIATE_ALERT
-    [UUID2OFFSET(BLE_UUID_IMMEDIATE_ALERT_SERVICE)] =
-    {
-        .init          = immediate_alert_init,
-        .event_handler = immediate_alert_handler,
-    },
-    #endif
-
-    #if CFG_BLE_TX_POWER
-    [UUID2OFFSET(BLE_UUID_TX_POWER_SERVICE)] =
-    {
-        .init          = tx_power_init,
-        .event_handler = NULL,
-    },
-    #endif
-
-    #if CFG_BLE_LINK_LOSS
-    [UUID2OFFSET(BLE_UUID_LINK_LOSS_SERVICE)] =
-    {
-        .init          = link_loss_init,
-        .event_handler = link_loss_handler,
-    },
-    #endif
-};
-
-enum {
-  BTLE_SERVICE_MAX = sizeof(btle_service_driver) / sizeof(btle_service_driver_t)
-};
-
-btle_service_custom_driver_t btle_service_custom_driver[] =
+btle_service_driver_t btle_service_list[] =
 {
     {
-        .uuid_base         = BLE_UART_UUID_BASE,
-        .service_uuid.uuid = BLE_UART_UUID_PRIMARY_SERVICE,
-        .init              = uart_service_init,
-        .event_handler     = uart_service_handler
+        .uuid_base     = BLE_UART_UUID_BASE,
+        .uuid16        = BLE_UART_UUID_PRIMARY_SERVICE,
+        .init          = uart_service_init,
+        .event_handler = uart_service_handler
     },
 };
 
 enum {
-  BTLE_SERVICE_CUSTOM_MAX = sizeof(btle_service_custom_driver) / sizeof(btle_service_custom_driver_t)
+  BTLE_SERVICE_COUNT = sizeof(btle_service_list) / sizeof(btle_service_driver_t)
 };
 
 //--------------------------------------------------------------------+
@@ -135,6 +77,25 @@ static error_t bond_manager_init(void);
 
 static void btle_handler(ble_evt_t * p_ble_evt);
 static void btle_soc_event_handler(uint32_t sys_evt);
+
+/**************************************************************************/
+/*!
+    Checks is all values in the supplied array are zero
+
+    @returns  'true' if all values in the array are zero
+              'false' if any value is non-zero
+*/
+/**************************************************************************/
+static inline bool is_all_zeros(uint8_t arr[], uint32_t count) ATTR_ALWAYS_INLINE ATTR_PURE;
+static inline bool is_all_zeros(uint8_t arr[], uint32_t count)
+{
+  for ( uint32_t i = 0; i < count; i++)
+  {
+    if (arr[i] != 0 ) return false;
+  }
+
+  return true;
+}
 
 /**************************************************************************/
 /*!
@@ -156,30 +117,28 @@ error_t btle_init(void)
   /* Initialise GAP */
   btle_gap_init();
 
-  /* Standard Services */
-  for(uint16_t i=0; i<BTLE_SERVICE_MAX; i++)
+  /* Initialise Services */
+  for(uint16_t i=0; i<BTLE_SERVICE_COUNT; i++)
   {
-    if ( btle_service_driver[i].init != NULL )
+    btle_service_driver_t* const p_service = &btle_service_list[i];
+
+    /* If we are using a custom UUID we first need to add it to the stack */
+    if ( is_all_zeros(p_service->uuid_base, 16) )
     {
-      ASSERT_STATUS( btle_service_driver[i].init() );
+      /* Seems to be a standard 16-bit BLE UUID */
+      p_service->uuid_type = BLE_UUID_TYPE_BLE;
     }
+    else
+    {
+      /* Seems to be a custom UUID, which needs to be added */
+      p_service->uuid_type = custom_add_uuid_base( p_service->uuid_base );
+      ASSERT( p_service->uuid_type >= BLE_UUID_TYPE_VENDOR_BEGIN, ERROR_INVALIDPARAMETER );
+    }
+
+    if ( p_service->init != NULL) ASSERT_STATUS( p_service->init(p_service->uuid_type) );
   }
 
-  /*Custom Services */
-  for(uint16_t i=0; i<BTLE_SERVICE_CUSTOM_MAX; i++)
-  {
-    if ( btle_service_custom_driver[i].init != NULL )
-    {
-      /* add the custom UUID to stack */
-      uint8_t uuid_type = custom_add_uuid_base(btle_service_custom_driver[i].uuid_base);
-      ASSERT( uuid_type >= BLE_UUID_TYPE_VENDOR_BEGIN, ERROR_INVALIDPARAMETER);
-
-      btle_service_custom_driver[i].service_uuid.type = uuid_type; /* store for later use in advertising */
-      ASSERT_STATUS( btle_service_custom_driver[i].init(uuid_type) );
-    }
-  }
-
-  btle_advertising_init(btle_service_driver, BTLE_SERVICE_MAX, btle_service_custom_driver, BTLE_SERVICE_CUSTOM_MAX);
+  btle_advertising_init(btle_service_list, BTLE_SERVICE_COUNT);
   btle_advertising_start();
 
   return ERROR_NONE;
@@ -208,23 +167,15 @@ static void btle_handler(ble_evt_t * p_ble_evt)
   ble_bondmngr_on_ble_evt(p_ble_evt);
   ble_conn_params_on_ble_evt(p_ble_evt);
 
-  /* Standard Service Handler */
-  for(uint16_t i=0; i<BTLE_SERVICE_MAX; i++)
+  /* Service Handler */
+  for(uint16_t i=0; i<BTLE_SERVICE_COUNT; i++)
   {
-    if ( btle_service_driver[i].event_handler != NULL )
+    if ( btle_service_list[i].event_handler != NULL )
     {
-      btle_service_driver[i].event_handler(p_ble_evt);
+      btle_service_list[i].event_handler(p_ble_evt);
     }
   }
 
-  /* Custom Service Handler */
-  for(uint16_t i=0; i<BTLE_SERVICE_CUSTOM_MAX; i++)
-  {
-    if ( btle_service_custom_driver[i].event_handler != NULL )
-    {
-      btle_service_custom_driver[i].event_handler(p_ble_evt);
-    }
-  }
   switch (p_ble_evt->header.evt_id)
   {
     case BLE_GAP_EVT_CONNECTED:

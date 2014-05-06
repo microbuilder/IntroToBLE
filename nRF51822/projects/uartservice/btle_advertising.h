@@ -50,8 +50,7 @@
 
 #include "common/common.h"
 
-error_t btle_advertising_init(btle_service_driver_t const std_service[], uint16_t const std_count,
-                              btle_service_custom_driver_t const custom_service[], uint16_t const custom_count);
+error_t btle_advertising_init( btle_service_driver_t const service_list[], uint16_t const service_count);
 error_t btle_advertising_start(void);
 
 #ifdef __cplusplus

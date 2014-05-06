@@ -65,8 +65,7 @@
     @returns
 */
 /**************************************************************************/
-error_t btle_advertising_init(btle_service_driver_t const std_service[], uint16_t const std_count,
-                              btle_service_custom_driver_t const custom_service[], uint16_t const custom_count)
+error_t btle_advertising_init( btle_service_driver_t const service_list[], uint16_t const service_count)
 {
   enum {
     ADV_UUID_MAX = 20,
@@ -85,40 +84,45 @@ error_t btle_advertising_init(btle_service_driver_t const std_service[], uint16_
 
   /*------------- UUID list -------------*/
   ble_uuid_t adv_uuids[ADV_UUID_MAX];
-  ASSERT( ADV_UUID_MAX >= std_count + custom_count, ERROR_NO_MEM); // the total service count exceed 20, need to increase ADV_COUNT_MAX
+  ASSERT( ADV_UUID_MAX >= service_count, ERROR_NO_MEM); // the total service count exceed 20, need to increase ADV_COUNT_MAX
 
-  uint16_t uuid_count = 0;
+  uint16_t uuid_count;
 
-  /* Standard Services are added first (higher priority), modify to your own need if required */
-  if (std_count > 0)
+  bool encounter_16_uuid_already  = false;
+  bool encounter_128_uuid_already = false;
+
+  /* Create Advertising UUID following the order of service list */
+  for(uuid_count=0; uuid_count < service_count && byte_left > 0; uuid_count++)
   {
-    byte_left -= ADV_FIELD_HEADER_LENGTH;
-    for (uint16_t i=0; (i < std_count) && (byte_left > 0) ; i++)
+    adv_uuids[uuid_count].type = service_list[uuid_count].uuid_type;
+    adv_uuids[uuid_count].uuid = service_list[uuid_count].uuid16;
+
+    /*------------- Standard 16-bit UUID -------------*/
+    if ( BLE_UUID_TYPE_BLE == adv_uuids[uuid_count].type )
     {
-      if (std_service[i].init != NULL)
+      if( !encounter_16_uuid_already )
       {
-        adv_uuids[uuid_count].uuid = i+0x1800;
-        adv_uuids[uuid_count].type = BLE_UUID_TYPE_BLE;
-        ++uuid_count;
-        byte_left -= 2; // 16-bit uuid
+        byte_left -= ADV_FIELD_HEADER_LENGTH;
+        encounter_16_uuid_already = true;
       }
+      byte_left -= sizeof(uint16_t); // size of 16-bit uuid
+    }
+    /*------------- Custom 128-bit UUID -------------*/
+    else if ( adv_uuids[uuid_count].type > BLE_UUID_TYPE_BLE)
+    {
+      if( !encounter_128_uuid_already )
+      {
+        byte_left -= ADV_FIELD_HEADER_LENGTH;
+        encounter_128_uuid_already = true;
+      }
+      byte_left -= sizeof(ble_uuid128_t); // size of 128-bit uuid
+    }else
+    {
+      ASSERT(false, 0); // uuid type is not initialized
     }
   }
 
-  /* Custom Services are added later (lower priority), modify to your own need if required */
-  if (custom_count > 0)
-  {
-    byte_left -= ADV_FIELD_HEADER_LENGTH;
-    for (uint16_t i=0; (i<custom_count) && (byte_left > 0); i++)
-    {
-      if (custom_service[i].service_uuid.type >= BLE_UUID_TYPE_VENDOR_BEGIN)
-      {
-        adv_uuids[uuid_count] = custom_service[i].service_uuid;
-        ++uuid_count;
-        byte_left -= 16; // 128-bit uuid
-      }
-    }
-  }
+  if ( byte_left < 0) uuid_count--; // remove the last uuid from the adv list since it overflows
 
   /*------------- Advertising Data -------------*/
   ble_advdata_t advdata =

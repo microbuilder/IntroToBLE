@@ -46,17 +46,13 @@
 #include "btle_uart.h"
 
 typedef struct {
-  error_t (* const init) (void);
-  void (* const event_handler) (ble_evt_t * );
-}btle_service_driver_t;
-
-typedef struct {
   error_t (* const init) (uint8_t);
   void (* const event_handler) (ble_evt_t * );
 
-  uint8_t const uuid_base[16];
-  ble_uuid_t service_uuid;
-}btle_service_custom_driver_t;
+  uint8_t uuid_base[16]; /* Full base UUID, All zeroes = standard BLE service */
+  uint16_t uuid16;       /* The primary service UUID */
+  uint8_t  uuid_type;    /* Standard = 1, Custom = 2+, Invalid = 0 */
+}btle_service_driver_t;
 
 /* Characteristic Presentation Format unit values aren't defined by Nordic */
 /* See https://developer.bluetooth.org/gatt/units/Pages/default.aspx */
