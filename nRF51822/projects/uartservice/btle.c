@@ -47,39 +47,101 @@
 #include "btle_gap.h"
 #include "btle_advertising.h"
 #include "custom_helper.h"
+#include "btle_uart.h"
 
-static void    service_error_callback ( uint32_t nrf_error );
-void           assert_nrf_callback    ( uint16_t line_num, const uint8_t * p_file_name );
-void           app_error_handler      ( uint32_t error_code, uint32_t line_num, const uint8_t * p_file_name );
-static error_t bond_manager_init      ( void );
-static void    btle_handler           ( ble_evt_t * p_ble_evt );
-static void    btle_soc_event_handler ( uint32_t sys_evt );
+//--------------------------------------------------------------------+
+// MACRO CONSTANT TYPEDEF
+//--------------------------------------------------------------------+
+// standard service UUID to driver offset
+#define UUID2OFFSET(uuid)   ((uuid)-0x1800)
 
-/**************************************************************************/
-/*!
-    Checks is all values in the supplied array are zero
-
-    @returns  'true' if all values in the array are zero
-              'false' if any value is non-zero
-*/
-/**************************************************************************/
-static inline bool is_all_zeros(uint8_t arr[], uint32_t count) ATTR_ALWAYS_INLINE ATTR_PURE;
-static inline bool is_all_zeros(uint8_t arr[], uint32_t count)
+btle_service_driver_t const btle_service_driver[] =
 {
-  for ( uint32_t i = 0; i < count; i++) 
-  {
-    if (arr[i] != 0 ) return false;
-  }
+    #if CFG_BLE_DEVICE_INFORMATION
+    [UUID2OFFSET(BLE_UUID_DEVICE_INFORMATION_SERVICE)] =
+    {
+        .init          = device_information_init,
+        .event_handler = NULL,
+    },
+    #endif
 
-  return true;
-}
+    #if CFG_BLE_BATTERY
+    [UUID2OFFSET(BLE_UUID_BATTERY_SERVICE)] =
+    {
+        .init          = battery_init,
+        .event_handler = battery_handler,
+    },
+    #endif
+
+    #if CFG_BLE_HEART_RATE
+//    [UUID2OFFSET(BLE_UUID_HEART_RATE_SERVICE)] =
+//    {
+//        .init          = heart_rate_init,
+//        .event_handler = heart_rate_handler,
+//    },
+    #endif
+
+    #if CFG_BLE_IMMEDIATE_ALERT
+    [UUID2OFFSET(BLE_UUID_IMMEDIATE_ALERT_SERVICE)] =
+    {
+        .init          = immediate_alert_init,
+        .event_handler = immediate_alert_handler,
+    },
+    #endif
+
+    #if CFG_BLE_TX_POWER
+    [UUID2OFFSET(BLE_UUID_TX_POWER_SERVICE)] =
+    {
+        .init          = tx_power_init,
+        .event_handler = NULL,
+    },
+    #endif
+
+    #if CFG_BLE_LINK_LOSS
+    [UUID2OFFSET(BLE_UUID_LINK_LOSS_SERVICE)] =
+    {
+        .init          = link_loss_init,
+        .event_handler = link_loss_handler,
+    },
+    #endif
+};
+
+enum {
+  BTLE_SERVICE_MAX = sizeof(btle_service_driver) / sizeof(btle_service_driver_t)
+};
+
+btle_service_custom_driver_t btle_service_custom_driver[] =
+{
+    {
+        .uuid_base         = BLE_UART_UUID_BASE,
+        .service_uuid.uuid = BLE_UART_UUID_PRIMARY_SERVICE,
+        .init              = uart_service_init,
+        .event_handler     = uart_service_handler
+    },
+};
+
+enum {
+  BTLE_SERVICE_CUSTOM_MAX = sizeof(btle_service_custom_driver) / sizeof(btle_service_custom_driver_t)
+};
+
+//--------------------------------------------------------------------+
+// INTERNAL OBJECT & FUNCTION DECLARATION
+//--------------------------------------------------------------------+
+static void service_error_callback(uint32_t nrf_error);
+void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name);
+void app_error_handler(uint32_t error_code, uint32_t line_num, const uint8_t * p_file_name);
+
+static error_t bond_manager_init(void);
+
+static void btle_handler(ble_evt_t * p_ble_evt);
+static void btle_soc_event_handler(uint32_t sys_evt);
 
 /**************************************************************************/
 /*!
     Initialises BTLE and the underlying HW/SoftDevice
 */
 /**************************************************************************/
-error_t btle_init(btle_service_t service_list[], uint8_t const service_count)
+error_t btle_init(void)
 {
   /* Initialise the SoftDevice using an external 32kHz XTAL for LFCLK */
   SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, false);
@@ -94,105 +156,35 @@ error_t btle_init(btle_service_t service_list[], uint8_t const service_count)
   /* Initialise GAP */
   btle_gap_init();
 
-  /* Initialise any services present on the GATT Server */
-  /* This sequences will be repeated for every service */
-  for ( uint8_t sid = 0; sid < service_count; sid++ )
+  /* Standard Services */
+  for(uint16_t i=0; i<BTLE_SERVICE_MAX; i++)
   {
-    btle_service_t * p_service = &service_list[sid];
-
-    /* If we are using a custom UUID we first need to add it to the stack */
-    if ( is_all_zeros(p_service->uuid_base, 16) )
+    if ( btle_service_driver[i].init != NULL )
     {
-      /* Seems to be a standard 16-bit BLE UUID */
-      p_service->uuid_type = BLE_UUID_TYPE_BLE;
-    }
-    else
-    {
-      /* Seems to be a custom UUID, which needs to be added */
-      p_service->uuid_type = custom_add_uuid_base( p_service->uuid_base );
-      ASSERT( p_service->uuid_type >= BLE_UUID_TYPE_VENDOR_BEGIN, ERROR_INVALIDPARAMETER );
-    }
-
-    /* Add the primary GATT service first ... */
-    ble_uuid_t service_uuid = { .type = p_service->uuid_type, .uuid = p_service->uuid };
-    ASSERT_STATUS( sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &service_uuid, &p_service->handle) );
-
-    /* ... then add all of the GATT characteristics */
-    for(uint8_t cid=0; cid<p_service->char_count; cid++)
-    {
-      btle_characteristic_t * p_char = p_service->char_pool[cid];
-      ble_uuid_t char_uuid = { .type = p_service->uuid_type, .uuid = p_char->uuid };
-
-      ASSERT_STATUS(custom_add_in_characteristic(p_service->handle, &char_uuid, p_char->properties,
-                                                 p_char->init_value, p_char->len_min, p_char->len_max,
-                                                 &p_char->handle) );
+      ASSERT_STATUS( btle_service_driver[i].init() );
     }
   }
 
-  /* Now we can start the advertising process */
-  btle_advertising_init(service_list, service_count);
+  /*Custom Services */
+  for(uint16_t i=0; i<BTLE_SERVICE_CUSTOM_MAX; i++)
+  {
+    if ( btle_service_custom_driver[i].init != NULL )
+    {
+      /* add the custom UUID to stack */
+      uint8_t uuid_type = custom_add_uuid_base(btle_service_custom_driver[i].uuid_base);
+      ASSERT( uuid_type >= BLE_UUID_TYPE_VENDOR_BEGIN, ERROR_INVALIDPARAMETER);
+
+      btle_service_custom_driver[i].service_uuid.type = uuid_type; /* store for later use in advertising */
+      ASSERT_STATUS( btle_service_custom_driver[i].init(uuid_type) );
+    }
+  }
+
+  btle_advertising_init(btle_service_driver, BTLE_SERVICE_MAX, btle_service_custom_driver, BTLE_SERVICE_CUSTOM_MAX);
   btle_advertising_start();
 
   return ERROR_NONE;
 }
 
-/**************************************************************************/
-/*!
-    This function will attempt to update the value of a GATT characteristic
-
-    @param[in]  p_char  A pointer to the characteristic to update
-    @param[in]  p_data  A pointer to the data to use when updating
-    @param[in]  len     The size (in bytes) of p_data
-
-    @returns    ERROR_NONE if the update was successful, otherwise an
-                appropriate error_t value
-*/
-/**************************************************************************/
-error_t btle_characteristic_update(btle_characteristic_t const * p_char, void const * p_data, uint16_t len)
-{
-  uint16_t const conn_handle = btle_gap_get_connection();
-
-  /* Special treatment is required if notify or indicate flags are set */
-  if ( (p_char->properties.notify || p_char->properties.indicate) && (conn_handle != BLE_CONN_HANDLE_INVALID) )
-  {
-    /* HVX params for the characteristic value */
-    ble_gatts_hvx_params_t const hvx_params =
-    {
-        .handle = p_char->handle.value_handle,
-        .type   = p_char->properties.notify ? BLE_GATT_HVX_NOTIFICATION : BLE_GATT_HVX_INDICATION,
-        .offset = 0,
-        .p_data = (uint8_t*) p_data,
-        .p_len  = &len
-    };
-
-    /* Now pass the params down to the SD ... */
-    error_t error = sd_ble_gatts_hvx(conn_handle, &hvx_params);
-
-    /* ... and make sure nothing unfortunate happened */
-    switch(error)
-    {
-      /* Ignore the following three error types */
-      case ERROR_NONE                      :
-      case ERROR_INVALID_STATE             : // Notification/indication bit not enabled in CCCD
-      case ERROR_BLEGATTS_SYS_ATTR_MISSING :
-      break;
-
-      /* Make sure that the local value is updated and handle any other */
-      /* error types errors here */
-      default:
-        ASSERT_STATUS ( sd_ble_gatts_value_set(p_char->handle.value_handle, 0, &len, p_data) );
-        ASSERT_STATUS ( error );
-      break;
-    }
-  } 
-  else
-  {
-    /* If notify or indicate aren't set we can update the value like this */
-    ASSERT_STATUS ( sd_ble_gatts_value_set(p_char->handle.value_handle, 0, &len, p_data) );
-  }
-
-  return ERROR_NONE;
-}
 
 /**************************************************************************/
 /*!
@@ -216,7 +208,23 @@ static void btle_handler(ble_evt_t * p_ble_evt)
   ble_bondmngr_on_ble_evt(p_ble_evt);
   ble_conn_params_on_ble_evt(p_ble_evt);
 
-  /* Next call the application specific event handlers */
+  /* Standard Service Handler */
+  for(uint16_t i=0; i<BTLE_SERVICE_MAX; i++)
+  {
+    if ( btle_service_driver[i].event_handler != NULL )
+    {
+      btle_service_driver[i].event_handler(p_ble_evt);
+    }
+  }
+
+  /* Custom Service Handler */
+  for(uint16_t i=0; i<BTLE_SERVICE_CUSTOM_MAX; i++)
+  {
+    if ( btle_service_custom_driver[i].event_handler != NULL )
+    {
+      btle_service_custom_driver[i].event_handler(p_ble_evt);
+    }
+  }
   switch (p_ble_evt->header.evt_id)
   {
     case BLE_GAP_EVT_CONNECTED:
@@ -225,7 +233,7 @@ static void btle_handler(ble_evt_t * p_ble_evt)
 
     case BLE_GAP_EVT_DISCONNECTED:
       /* Since we are not in a connection and have not started advertising, store bonds */
-      ASSERT_STATUS_RET_VOID ( ble_bondmngr_bonded_centrals_store() );
+      (void) ble_bondmngr_bonded_centrals_store();
       /* Start advertising again (change this if necessary!) */
       btle_advertising_start();
       break;

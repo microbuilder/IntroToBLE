@@ -45,32 +45,18 @@
 #include "ble.h"
 #include "btle_uart.h"
 
-enum 
-{
-  BTLE_MAX_CHARACTERISTIC_PER_SERVICE = 10
-};
+typedef struct {
+  error_t (* const init) (void);
+  void (* const event_handler) (ble_evt_t * );
+}btle_service_driver_t;
 
-/* Abstraction for custom GATT characteristics */
-typedef struct 
-{
-  uint16_t                  uuid;
-  ble_gatt_char_props_t     properties;  // Characteristic properties/access-rights
-  uint16_t                  len_min;     // Min length (in bytes) for the char value
-  uint16_t                  len_max;     // Max length (in bytes) for the char value
-  uint8_t const *           init_value;  // Initial value for the char
-  ble_gatts_char_handles_t  handle;      // Characteristic handle
-} btle_characteristic_t;
+typedef struct {
+  error_t (* const init) (uint8_t);
+  void (* const event_handler) (ble_evt_t * );
 
-/* Abstraction for custom GATT services */
-typedef struct 
-{
-  uint8_t                   uuid_base[16]; // All zeroes = standard BLE service
-  uint16_t                  uuid;          // The primary service UUID
-  uint8_t                   uuid_type;     // Standard = 1, Custom = 2, Invalid = 0
-  uint16_t                  handle;        // Service handle
-  uint8_t                   char_count;    // Number of characteristics
-  btle_characteristic_t*    char_pool[BTLE_MAX_CHARACTERISTIC_PER_SERVICE];
-} btle_service_t;
+  uint8_t const uuid_base[16];
+  ble_uuid_t service_uuid;
+}btle_service_custom_driver_t;
 
 /* Characteristic Presentation Format unit values aren't defined by Nordic */
 /* See https://developer.bluetooth.org/gatt/units/Pages/default.aspx */
@@ -187,8 +173,7 @@ typedef enum ble_gatt_unit_e
   BLE_GATT_CPF_UNIT_IRRADIANCE_WATT_PER_SQUARE_METRE                       = 0x27B6
 } ble_gatt_unit_t;
 
-error_t btle_init                  ( btle_service_t service_list[], uint8_t const service_count );
-error_t btle_characteristic_update ( btle_characteristic_t const * p_char, void const * p_data, uint16_t len );
+error_t btle_init(void);
 
 #ifdef __cplusplus
  }

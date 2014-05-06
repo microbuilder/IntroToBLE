@@ -40,6 +40,7 @@
 #include "btle_uart.h"
 #include "custom_helper.h"
 #include "ble_srv_common.h"
+#include "btle_gap.h"
 
 typedef struct
 {
@@ -66,7 +67,6 @@ static uart_srvc_t m_uart_srvc;
 error_t uart_service_init(uint8_t uuid_base_type)
 {
   memclr_(&m_uart_srvc, sizeof(uart_srvc_t));
-  m_uart_srvc.conn_handle = BLE_CONN_HANDLE_INVALID;
   m_uart_srvc.uuid_type = uuid_base_type;
 
   /* Add the primary service first ... */
@@ -107,14 +107,6 @@ void uart_service_handler(ble_evt_t * p_ble_evt)
 {
   switch (p_ble_evt->header.evt_id)
   {
-    case BLE_GAP_EVT_CONNECTED:
-      m_uart_srvc.conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
-    break;
-
-    case BLE_GAP_EVT_DISCONNECTED:
-      m_uart_srvc.conn_handle = BLE_CONN_HANDLE_INVALID;
-    break;
-
     /* Capture the 'indicate' confirmation from the central here */
     case BLE_GATTS_EVT_HVC:
       if( m_uart_srvc.in_handle.value_handle == p_ble_evt->evt.gatts_evt.params.hvc.handle )
@@ -171,7 +163,9 @@ void uart_service_handler(ble_evt_t * p_ble_evt)
 /**************************************************************************/
 error_t uart_service_send(uint8_t p_data[], uint16_t length)
 {
-  ASSERT( m_uart_srvc.conn_handle != BLE_CONN_HANDLE_INVALID, ERROR_INVALID_STATE);
+  uint16_t const conn_handle = btle_gap_get_connection();
+
+  ASSERT( conn_handle != BLE_CONN_HANDLE_INVALID, ERROR_INVALID_STATE);
   ASSERT( length <= BLE_UART_MAX_LENGTH, ERROR_INVALID_PARAM);
 
   ble_gatts_hvx_params_t hvx_params =
@@ -183,7 +177,7 @@ error_t uart_service_send(uint8_t p_data[], uint16_t length)
   };
 
   m_uart_srvc.is_indication_waiting = true;
-  ASSERT_STATUS( sd_ble_gatts_hvx(m_uart_srvc.conn_handle, &hvx_params) );
+  ASSERT_STATUS( sd_ble_gatts_hvx(conn_handle, &hvx_params) );
 
   return ERROR_NONE;
 }
