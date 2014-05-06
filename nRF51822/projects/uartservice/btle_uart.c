@@ -45,7 +45,6 @@
 typedef struct
 {
   uint16_t                  service_handle;
-  uint16_t                  conn_handle;
   uint8_t                   uuid_type;
   ble_gatts_char_handles_t  in_handle;
   ble_gatts_char_handles_t  out_handle;
