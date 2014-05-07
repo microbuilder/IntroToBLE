@@ -55,13 +55,14 @@ int main(void)
   /* Initialize the target HW */
   boardInit();
   
-  /* Initialise BLE and start advertising as an iBeacon */
+  /* Initialise BLE and start advertising */
   btle_init();
 
   /* Initialise a 1 second blinky timer to show that we're alive */
   ASSERT_STATUS ( app_timer_create(&blinky_timer_id, APP_TIMER_MODE_REPEATED, blinky_handler) );
   ASSERT_STATUS ( app_timer_start (blinky_timer_id, APP_TIMER_TICKS(1000, CFG_TIMER_PRESCALER), NULL) );
 
+  /* Initialise a 1 second UART timer */
   ASSERT_STATUS ( app_timer_create(&uart_timer_id, APP_TIMER_MODE_REPEATED, uart_service_bridge_task) );
   ASSERT_STATUS ( app_timer_start (uart_timer_id, APP_TIMER_TICKS(1000, CFG_TIMER_PRESCALER), NULL) );
 
