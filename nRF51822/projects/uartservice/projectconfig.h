@@ -125,7 +125,7 @@
     BTLE SETTINGS
     -----------------------------------------------------------------------*/
 
-    #define CFG_BLE_TX_POWER_LEVEL                     4                        /**< in dBm (Valid values are -40, -20, -16, -12, -8, -4, 0, 4) */
+    #define CFG_BLE_TX_POWER_LEVEL                     0                        /**< in dBm (Valid values are -40, -20, -16, -12, -8, -4, 0, 4) */
 
     /*---------------------------- BOND MANAGER ---------------------------*/
     #define CFG_BLE_BOND_FLASH_PAGE_BOND               (BLE_FLASH_PAGE_END-1)   /**< Flash page used for bond manager bonding information.*/
@@ -134,14 +134,14 @@
 
     /*--------------------------------- GAP -------------------------------*/
     #define CFG_GAP_APPEARANCE                         BLE_APPEARANCE_GENERIC_TAG
-    #define CFG_GAP_LOCAL_NAME                         "HRM"
+    #define CFG_GAP_LOCAL_NAME                         "UART"
 
     #define CFG_GAP_CONNECTION_MIN_INTERVAL_MS         500                      /**< Minimum acceptable connection interval */
     #define CFG_GAP_CONNECTION_MAX_INTERVAL_MS         1000                     /**< Maximum acceptable connection interval */
     #define CFG_GAP_CONNECTION_SUPERVISION_TIMEOUT_MS  4000                     /**< Connection supervisory timeout */
     #define CFG_GAP_CONNECTION_SLAVE_LATENCY           0                        /**< Slave Latency in number of connection events. */
 
-    #define CFG_GAP_ADV_INTERVAL_MS                    25                       /**< The advertising interval in miliseconds, should be multiply of 0.625 */
+    #define CFG_GAP_ADV_INTERVAL_MS                    25                       /**< The advertising interval in milliseconds, should be multiply of 0.625 */
     #define CFG_GAP_ADV_TIMEOUT_S                      180                      /**< The advertising timeout in units of seconds. */
 /*=========================================================================*/
 
