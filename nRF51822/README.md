@@ -49,7 +49,7 @@ Make sure that you also include the matching SoftDevice header files, which will
 Similarly, the SDK files must be placed in the following folder, which allows you to maintain several versions of the SDK across different projects if necessary:
 
 ```
-  [projfolder]/lib/sdk/nRF51_SDK_v5.1.0.36092/s110_nrf51822_6.0.0_softdevice.hex
+  [projfolder]/lib/sdk/nRF51_SDK_v5.1.0.36092
 ```
 
 The makefiles are located in the following folder, and reference makefiles are included in the default codebase as a reference.  You will probably want to replace the default files in this folder from Nordic with the updated versions provided in this codbase:
