@@ -43,7 +43,7 @@ The SoftDevice must be unzipped and placed in the /lib/softdevice/* folder, and 
 Make sure that you also include the matching SoftDevice header files, which will normally go in the folder below:
 
 ```
-  [projfolder]/lib/softdevice/s110_nrf51822_6.0.0/s110_nrf51822_6.0.0/s110_nrf51822_6.0.0_API/include
+  [projfolder]/lib/softdevice/s110_nrf51822_6.0.0/s110_nrf51822_6.0.0_API/include
 ```
 
 Similarly, the SDK files must be placed in the following folder, which allows you to maintain several versions of the SDK across different projects if necessary:
