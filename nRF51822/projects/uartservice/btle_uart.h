@@ -66,6 +66,7 @@
     #define BLE_UART_UUID_PRIMARY_SERVICE   (1)
     #define BLE_UART_UUID_IN                (3)
     #define BLE_UART_UUID_OUT               (2)
+    #define BLE_UART_SEND_INDICATION        (0)
 /*=========================================================================*/
 
 error_t uart_service_init              ( uint8_t uuid_base_type );

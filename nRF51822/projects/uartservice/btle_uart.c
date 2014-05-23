@@ -78,8 +78,15 @@ error_t uart_service_init(uint8_t uuid_base_type)
 
   /* ... then add the individual characteristics */
   ble_uuid.uuid = BLE_UART_UUID_IN;
+
+  ble_gatt_char_props_t send_properties =
+  {
+      .indicate = BLE_UART_SEND_INDICATION,
+      .notify   = 1-BLE_UART_SEND_INDICATION
+  };
+
   ASSERT_STATUS(custom_add_in_characteristic(m_uart_srvc.service_handle,
-                                             &ble_uuid, (ble_gatt_char_props_t) {.indicate = 1},
+                                             &ble_uuid, send_properties,
                                              NULL, 1, BLE_UART_MAX_LENGTH,
                                              &m_uart_srvc.in_handle) );
 
@@ -106,6 +113,8 @@ void uart_service_handler(ble_evt_t * p_ble_evt)
 {
   switch (p_ble_evt->header.evt_id)
   {
+
+#if BLE_UART_SEND_INDICATION
     /* Capture the 'indicate' confirmation from the central here */
     case BLE_GATTS_EVT_HVC:
       if( m_uart_srvc.in_handle.value_handle == p_ble_evt->evt.gatts_evt.params.hvc.handle )
@@ -126,6 +135,7 @@ void uart_service_handler(ble_evt_t * p_ble_evt)
         uart_service_indicate_callback(false);
       }
     break;
+#endif
 
     /* Handle incoming data on the RXD characteristic */
     case BLE_GATTS_EVT_WRITE:
@@ -170,7 +180,7 @@ error_t uart_service_send(uint8_t p_data[], uint16_t length)
   ble_gatts_hvx_params_t hvx_params =
   {
       .handle = m_uart_srvc.in_handle.value_handle,
-      .type   = BLE_GATT_HVX_INDICATION,
+      .type   = BLE_UART_SEND_INDICATION ? BLE_GATT_HVX_INDICATION : BLE_GATT_HVX_NOTIFICATION,
       .p_data = p_data,
       .p_len  = &length,
   };

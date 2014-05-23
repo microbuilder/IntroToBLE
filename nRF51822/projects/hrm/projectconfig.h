@@ -136,8 +136,8 @@
     #define CFG_GAP_APPEARANCE                         BLE_APPEARANCE_GENERIC_TAG
     #define CFG_GAP_LOCAL_NAME                         "HRM"
 
-    #define CFG_GAP_CONNECTION_MIN_INTERVAL_MS         500                      /**< Minimum acceptable connection interval */
-    #define CFG_GAP_CONNECTION_MAX_INTERVAL_MS         1000                     /**< Maximum acceptable connection interval */
+    #define CFG_GAP_CONNECTION_MIN_INTERVAL_MS         10                      /**< Minimum acceptable connection interval */
+    #define CFG_GAP_CONNECTION_MAX_INTERVAL_MS         100                     /**< Maximum acceptable connection interval */
     #define CFG_GAP_CONNECTION_SUPERVISION_TIMEOUT_MS  4000                     /**< Connection supervisory timeout */
     #define CFG_GAP_CONNECTION_SLAVE_LATENCY           0                        /**< Slave Latency in number of connection events. */
 
