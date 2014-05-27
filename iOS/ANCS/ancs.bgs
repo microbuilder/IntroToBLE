@@ -1,0 +1,280 @@
+# ANCS Demo
+# Author: John Gallagher (slackhappy)
+# https://github.com/slackhappy/ble112/tree/master/ancs
+#
+# Subscribes to iOS notifications, e.g. incoming calls.
+#
+# Modified from an excellent example:
+# https://bluegiga.zendesk.com/entries/23999407--BGScript-htm-collector-Health-Thermometer-collector-BLE-master- by Jeff Rowberg
+# with help from
+# https://bluegiga.zendesk.com/entries/22882472--REFERENCE-Bonding-encryption-and-MITM-protection-with-the-BLE112
+# and
+# http://blog.punchthrough.com/post/63658238857/the-apple-notification-center-service-or-wtf-is
+
+const STATE_STANDBY = 0
+const STATE_CONNECTING = 1
+const STATE_FINDING_SERVICES = 2
+const STATE_FINDING_ATTRIBUTES = 3
+const STATE_SUBSCRIBING_NS = 4
+const STATE_SUBSCRIBING_DS = 5
+const STATE_LISTENING = 6
+
+const FOUND_NONE = 0
+const FOUND_DS = 1
+const FOUND_NS = 2
+
+dim find_state
+dim device_state
+
+dim att_handle_ns_ccc
+dim att_handle_ns
+dim att_handle_ds_ccc
+dim att_handle_ds
+dim att_handle_cp
+dim att_handlesearch_start
+dim att_handlesearch_end
+
+dim ancs_connection
+
+dim endpoint
+
+dim get_notification_attr_buf(30)
+dim indicate_buf(2)
+
+dim atoi_buf(15)
+dim atoi_buf_pos
+dim atoi_buf_len
+dim num
+
+
+dim adv_data(30)
+
+# Boot event listener
+# 7905F431-B5CE-4E99-A40F-4B1E122D00D0 ANCS Service
+event system_boot(major, minor, patch, build, ll_version, protocol_version, hw)
+  device_state = STATE_STANDBY
+  atoi_buf_len = 15
+  att_handle_ns_ccc = 0
+  att_handle_ds_ccc = 0
+  att_handle_ds = 0
+  att_handle_ns = 0
+  
+  # set the value for the attribute find state
+  find_state = FOUND_NONE
+
+
+  adv_data( 0:1) = $02 # ad field length = 2 bytes
+  adv_data( 1:1) = gap_ad_type_flags   # ad field type = 0x01 (Flags)
+  adv_data( 2:1) = $02 # 3.C.18.1: 00000110b  generaldisc, no BR/EDR
+
+  adv_data( 3:1) = $04 # ad field length = 04
+  adv_data( 4:1) = $09 # Complete local name
+  adv_data( 5:1) = $42 # B
+  adv_data( 6:1) = $4F # O
+  adv_data( 7:1) = $42 # B
+
+  adv_data( 8:1) = $11 # ad field 17
+  adv_data( 9:1) = $15 # Service Solicitation, 128-bit UUIDs
+  adv_data(25:1) = $79 
+  adv_data(24:1) = $05
+  adv_data(23:1) = $F4
+  adv_data(22:1) = $31
+  adv_data(21:1) = $B5
+  adv_data(20:1) = $CE
+  adv_data(19:1) = $4E
+  adv_data(18:1) = $99
+  adv_data(17:1) = $A4
+  adv_data(16:1) = $0F
+  adv_data(15:1) = $4B
+  adv_data(14:1) = $1E
+  adv_data(13:1) = $12
+  adv_data(12:1) = $2D
+  adv_data(11:1) = $00
+  adv_data(10:1) = $D0
+ 
+  # System started, enable advertising and allow connections
+  # set advertisement interval to 1s-2s, use all advertisement channels
+  # (note min/max parameters are in units of 625 uSec)
+  
+  call gap_set_adv_parameters(20, 32, 7)
+  call gap_set_adv_data(0, 26, adv_data(0:26))
+  call gap_set_mode(gap_user_data, gap_undirected_connectable)
+
+  # TODO: consider bonding for faster reconnect
+
+  endpoint = system_endpoint_uart0
+  call system_endpoint_tx(endpoint, 11, "\n\rBooted!\n\r")
+
+end
+
+# Connection event listener
+event connection_status(connection, flags, address, address_type, conn_interval, timeout, latency, bonding)
+  call system_endpoint_tx(endpoint, 14, "\n\rConnected!\n\r")
+  ancs_connection = connection
+
+  # start encryption
+  if flags != $03 then
+    call system_endpoint_tx(endpoint, 21, "Starting Encryption\r\n")
+  	call sm_encrypt_start(ancs_connection, 0)
+  else
+    # kick off a discovery of ANCS
+    device_state = STATE_FINDING_SERVICES
+	call system_endpoint_tx(endpoint, 15, "Starting Find\r\n")
+	call attclient_read_by_group_type(connection, $0001, $ffff, 2, "\x00\x28")
+  end if
+end
+
+event attclient_group_found(connection, start_handle, end_handle, uuid_len, uuid_data)
+  # TODO, use memcmp with the adv_data(10:16), or something smarter
+  if uuid_len =16 && uuid_data(0:1) = $D0 && uuid_data(1:1) = $00 then
+    # save the handle range for attribute enumeration
+    att_handlesearch_start = start_handle
+    att_handlesearch_end = end_handle
+    call system_endpoint_tx(endpoint, 16, "Found service!\r\n")
+  end if
+  # Actual uuid_data
+  #D0 00 2D 12 1E 4B 0F A4 99 4E CE B5 31 F4 05 79
+end
+
+event connection_disconnected(handle, result)
+  call gap_set_mode(gap_user_data, gap_undirected_connectable)
+end
+
+# Callback for finding characteristics of a service
+event attclient_find_information_found(connection, chrhandle, uuid_len, uuid_data)
+  if uuid_len = 16 then
+    # TODO, memcmp with actual GUID values instead of checking first 2 bytes
+    if uuid_data(0:1) = $fb && uuid_data(1:1) = $7b then
+      find_state = FOUND_DS
+      att_handle_ds = chrhandle
+      call system_endpoint_tx(endpoint, 10, "FOUND_DS\r\n")
+    end if
+    if uuid_data(0:1) = $bd && uuid_data(1:1) = $1d then
+      find_state = FOUND_NS
+      att_handle_ns = chrhandle
+      call system_endpoint_tx(endpoint, 10, "FOUND_NS\r\n")
+    end if
+    if uuid_data(0:1) = $d9 && uuid_data(1:1) = $d9 then
+      find_state = FOUND_NONE
+      att_handle_cp = chrhandle
+      call system_endpoint_tx(endpoint, 10, "FOUND_CP\r\n")
+    end if
+  end if
+	if uuid_len = 2 then
+    # Look for the Client Configuration Characteristic
+    if uuid_data(0:1) = $02 && uuid_data(1:1) = $29 then
+      if find_state = FOUND_DS then
+        att_handle_ds_ccc = chrhandle
+        find_state = FOUND_NONE
+        call system_endpoint_tx(endpoint, 14, "FOUND_DS_CCC\r\n")
+      end if
+      if find_state = FOUND_NS then
+        att_handle_ns_ccc = chrhandle
+        find_state = FOUND_NONE
+        call system_endpoint_tx(endpoint, 14, "FOUND_NS_CCC\r\n")
+      end if
+    end if
+  end if
+end
+
+event attclient_attribute_value(connection, atthandle, type, value_len, value_data)
+  if device_state != STATE_LISTENING then
+    call system_endpoint_tx(endpoint, 12, "bad state!\r\n")
+    # reboot the device state machine
+    device_state = STATE_FINDING_SERVICES
+    call attclient_read_by_group_type(connection, $0001, $ffff, 2, "\x00\x28")
+  else
+    if atthandle = att_handle_ns then
+      # received a notification
+      if value_data(0:1) = $00 then
+        # notification added
+        if value_data(2:1) = $01
+          call system_endpoint_tx(endpoint, 6, "CALL\r\n")
+        end if
+        if value_data(2:1) = $02
+          call system_endpoint_tx(endpoint, 8, "MISSED\r\n")
+        end if
+        if value_data(2:1) = $03
+          call system_endpoint_tx(endpoint, 7, "VMAIL\r\n")
+        end if
+        call system_endpoint_tx(endpoint, 4, "ns\r\n")
+        get_notification_attr_buf(0:1) = $00 # Get attr
+        get_notification_attr_buf(1:1) = value_data(4:1)
+        get_notification_attr_buf(2:1) = value_data(5:1)
+        get_notification_attr_buf(3:1) = value_data(6:1)
+        get_notification_attr_buf(4:1) = value_data(7:1)
+        get_notification_attr_buf(5:1) = $01 # Title
+        get_notification_attr_buf(6:1) = $0b # 11
+        get_notification_attr_buf(7:1) = $00 # bytes max
+        # get the title for this notification from the control point
+        call attclient_attribute_write(connection, att_handle_cp, 8, get_notification_attr_buf(0:8))
+      end if
+    end if
+    if atthandle = att_handle_ds then
+      call system_endpoint_tx(endpoint, 4, "ds\r\n")
+      # received attribute data from the control point via the data source
+      if value_len > 8 then
+        call system_endpoint_tx(endpoint, value_len - 8, value_data(8:value_len - 8))
+        call system_endpoint_tx(endpoint, 2, "\r\n")
+      end if
+    end if
+  end if
+end
+
+event attclient_procedure_completed(connection, result, chrhandle)
+  call system_endpoint_tx(endpoint, 8, "\n\rdone\n\r")
+	num = result
+  atoi_buf_pos = atoi_buf_len
+  while atoi_buf_pos > 0
+    atoi_buf_pos = atoi_buf_pos - 1
+    atoi_buf(atoi_buf_pos:1) = 48 + (num - ((num / 10) * 10))
+    num = num / 10
+  end while
+  call system_endpoint_tx(endpoint, atoi_buf_len, atoi_buf(0:atoi_buf_len))
+  call system_endpoint_tx(endpoint, 2, "\r\n")
+	
+	# if result is $0405 (1029) - insufficient authentication
+
+  # finished some attclient operation, so figure out what happened
+  # list each state last to first, since there is no else if
+  if device_state = STATE_SUBSCRIBING_NS then
+    if result = 0 then
+      device_state = STATE_LISTENING
+      call system_endpoint_tx(endpoint, 9, "inited!\r\n")
+    end if
+  end if
+  if device_state = STATE_SUBSCRIBING_DS then
+    if att_handle_ns_ccc > 0 then
+      # change state
+      device_state = STATE_SUBSCRIBING_NS
+      indicate_buf(0:1) = $01
+      indicate_buf(1:1) = $00
+      call attclient_attribute_write(0, att_handle_ns_ccc, 2, indicate_buf(0:2))
+    else
+      call system_endpoint_tx(endpoint, 29, "att_handle_ns_ccc not found\r\n")
+    end if
+  end if
+  if device_state = STATE_FINDING_ATTRIBUTES then
+    if att_handle_ds_ccc > 0 then
+      # change state
+      device_state = STATE_SUBSCRIBING_DS
+      indicate_buf(0:1) = $01
+      indicate_buf(1:1) = $00
+      call attclient_attribute_write(0, att_handle_ds_ccc, 2, indicate_buf(0:2))
+    else
+      call system_endpoint_tx(endpoint, 29, "att_handle_ds_ccc not found\r\n")
+    end if
+  end if
+  if device_state = STATE_FINDING_SERVICES then
+    if att_handlesearch_end > 0 then
+      # change state
+      device_state = STATE_FINDING_ATTRIBUTES
+      call system_endpoint_tx(endpoint, 23, "Finding attributes...\r\n")
+      # found the ANCS service, now get the attributes: CP, DS, NS, DS CCC, NS CCC
+      call attclient_find_information(0, att_handlesearch_start, att_handlesearch_end)
+    else
+      # couldn't find the ANCS service
+      call system_endpoint_tx(endpoint, 24, "Couldn't find service!\r\n")
+    end if
+  end if
+end
