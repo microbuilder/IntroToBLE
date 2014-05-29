@@ -1,0 +1,76 @@
+dim data( 30 )
+dim result
+dim port
+dim read_data
+
+event system_boot( major, minor, patch, build, ll_version, protocol_version, hw )
+
+	# Set advertisement interval to 100 to 500ms. Use all advertisement channels
+	call gap_set_adv_parameters( 20, 100, 7 )
+	
+	#set to advertising mode
+	call gap_set_mode( gap_general_discoverable, gap_undirected_connectable )
+	
+	# Initialize iBeacon advertisement data
+	# Flags = LE General Discovery, single mode device (02 01 06)
+	# UUID for Apple's AirLocate app = 83256b74-78d0-43a4-8269-05f9dc8a44ba
+	# Major = 00 03 in this case
+	# Minor = 00 02
+	# Measured power = -58 ($c6)
+
+	# Flags
+	data( 0:1) = $02
+	data( 1:1) = $01
+	data( 2:1) = $06
+	
+	# Manufacturer data
+	data( 3:1) = $1a
+	data( 4:1) = $ff
+	
+	# Preamble
+	data( 5:1) = $4c
+	data( 6:1) = $00
+	data( 7:1) = $02
+	data( 8:1) = $15
+	
+	# UUID
+	# 1A CB AD 6E-E1 A5-48 38-A6 2A-22 D3 5D 00 C3 5B
+	data( 9:1) = $e2
+	data(10:1) = $c5
+	data(11:1) = $6d
+	data(12:1) = $b5
+	data(13:1) = $df
+	data(14:1) = $fb
+	data(15:1) = $48
+	data(16:1) = $d2
+	data(17:1) = $b0
+	data(18:1) = $60
+	data(19:1) = $d0  
+	data(20:1) = $f5
+	data(21:1) = $a7
+	data(22:1) = $10
+	data(23:1) = $96
+	data(24:1) = $e0
+	
+	# Major - e.g. Major = 3
+	data(25:1) = $00
+	data(26:1) = $03
+	
+	# Minor - e.g. Minor = 2
+	data(27:1) = $00
+	data(28:1) = $02
+	
+	# Measured power (specified in 2's complement, so 0xC6 is -58)
+	data(29:1) = $bc
+
+	# Set advertisement data
+	call gap_set_adv_data(0, 30, data(0:30))
+
+end
+
+# Disconnection event listener
+event connection_disconnected(handle, result)
+	# Reset connection parametesr
+    call gap_set_mode( gap_general_discoverable, gap_undirected_connectable )
+	call gap_set_adv_parameters( 20, 100, 7 )
+end

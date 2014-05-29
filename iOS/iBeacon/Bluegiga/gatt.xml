@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	
+	<service uuid="1800">
+		<description>Generic Access Profile</description>
+		
+		<!-- Device name -->
+		<characteristic uuid="2a00">
+			<properties read="true" const="true"/>
+			<value>iBeacon</value>
+		</characteristic>
+		
+		<!-- Appearance: Generic tag -->
+		<characteristic uuid="2a01">
+			<properties read="true" const="true"/>
+			<value type="hex">0200</value>
+		</characteristic>
+	</service>
+	
+	<service uuid="180a">
+		<description>Device Information</description>
+		
+		<characteristic uuid="2a29">
+			<properties read="true" const="true" />
+			<value>Bluegiga/JWJ</value>
+			<description>Manufacturer Name String</description>
+		</characteristic>
+		
+		<characteristic uuid="2a24">
+			<properties read="true" const="true" />
+			<value>1.0</value>
+			<description>Model Number String</description>
+		</characteristic>
+		
+		<characteristic uuid="2a26">
+			<properties read="true" const="true" />
+			<value>1.0</value>
+			<description>Firmware Revision String</description>
+		</characteristic>
+		
+		<characteristic uuid="2a27">
+			<properties read="true" const="true" />
+			<value>0.1</value>
+			<description>Hardware Revision String</description>
+		</characteristic>
+	</service>
+</configuration>
