@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <service uuid="1800">
+      <description>Generic Access Profile</description>
+
+      <characteristic uuid="2a00">
+        <properties read="true" const="true" />
+        <value>LED</value>
+      </characteristic>
+
+      <characteristic uuid="2a01">
+        <properties read="true" const="true" />
+        <value type="hex">4142</value>
+      </characteristic>
+    </service>
+    <service uuid="180A">
+      <description>Device Information</description>
+      <characteristic uuid="2a29">
+        <properties read="true" const="true" />
+        <value>Bluegiga</value>
+      </characteristic>
+      <characteristic uuid="2a28">
+        <properties read="true" const="true" />
+        <value>1.0</value>
+      </characteristic>
+      <characteristic uuid="2a26">
+        <properties read="true" const="true" />
+        <value>25</value>
+      </characteristic>
+      <characteristic uuid="2a24">
+        <properties read="true" const="true" />
+        <value>BLE112</value>
+      </characteristic>
+    </service>
+
+    <service uuid="384abbc5-9ad6-4eaa-86af-1ee629ba9838" advertise="true">
+      <description>LED Control Service</description>
+      <characteristic uuid="ee7c328f-6d47-4935-96ae-7ab28942074c" id="xgatt_led">
+        <description>LED Toggle</description>
+        <properties read="true" write="true" />
+        <value length="1" type="hex">01</value>
+      </characteristic>
+    </service>
+
+    <!--
+    <service uuid="7905F431-B5CE-4E99-A40F-4B1E122D00D0" advertise="true">
+      <description>ANCS</description>
+      <characteristic uuid="9FBF120D-6301-42D9-8C58-25E699A21DBD" id="xgatt_ns">
+        <description>Notification Source</description>
+        <properties notify="true" />
+        <value length="1" type="hex">01</value>
+      </characteristic>
+      <characteristic uuid="69D1D8F3-45E1-49A8-9821-9BBDFDAAD9D9" id="xgatt_cp">
+        <description>Control Point</description>
+        <properties write="true" />
+        <value length="1" type="hex">01</value>
+      </characteristic>
+    </service>
+    -->
+</configuration>
+
