@@ -1,4 +1,10 @@
 # Apple Notification Center Service Demo #
+Original Author: John Gallagher (slackhappy)
+Original location: https://github.com/slackhappy/ble112/tree/master/ancs
+
+Modified: Bob Davidson 2014  
+
+
 [Apple Notification Center Service](https://developer.apple.com/library/ios/documentation/CoreBluetooth/Reference/AppleNotificationCenterServiceSpecification/AppleNotificationCenterServiceSpecification.pdf) is a GATT service that will send push notifications to an connected bluetooth device whenever a notification event occurs on the iOS device.
 This code lays out the basic stuff you need to get ANCS working on a project with an embedded device, such as a DIY smartwatch. 
 
