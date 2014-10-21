@@ -1,7 +1,7 @@
 Heart Rate Monitor
 ==================
 
-This project instantiates a standard Heart Rate Monitor service (https://developer.bluetooth.org/gatt/services/Pages/ServiceViewer.aspx?u=org.bluetooth.service.heart_rate.xml), which can be viewed using toos like nRF Toolbox from Nordic Semiconductors (available on iOS and Android in the respective app stores).
+This project instantiates a standard [Heart Rate Monitor service](https://developer.bluetooth.org/gatt/services/Pages/ServiceViewer.aspx?u=org.bluetooth.service.heart_rate.xml), which can be viewed using toos like nRF Toolbox from Nordic Semiconductors (available on iOS and Android in the respective app stores).
 
 Target SDK/SD
 =============
