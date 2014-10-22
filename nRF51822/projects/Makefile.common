@@ -16,7 +16,6 @@ else
   GNU_VERSION := 4.8.3
   GNU_PREFIX := arm-none-eabi
   NRFJPROG = $(ROOT_PATH)tools/OSX/rknrfgo/nrfjprog
-  @chmod 755 $(NRFJPROG)
 endif
 
 
@@ -170,7 +169,16 @@ clean:
 ## Program device
 .PHONY: flash
 flash: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex
+	@echo ""
+ifeq ($(OS),Windows_NT)
+	$(NRFJPROG) -e --programs $(SOFTDEVICE)
 	$(NRFJPROG) --reset --program $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex
+else
+	@echo "Writing SoftDevice and User Code to Flash Memory"
+	@chmod 755 $(NRFJPROG)
+	$(NRFJPROG) wipe
+	$(NRFJPROG) program -S s110 -s $(SOFTDEVICE) -c $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex
+endif
 
 .PHONY: reset
 reset:

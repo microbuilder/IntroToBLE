@@ -44,6 +44,7 @@ C_SOURCE_FILES += nrf_delay.c
 # Make sure we're pointing to the right SDK version
 ROOT_PATH = ../../
 SDK_PATH = $(ROOT_PATH)lib/sdk/nRF51_SDK_v5.2.0.39364/Nordic/nrf51822/
+SOFTDEVICE = $(ROOT_PATH)lib/softdevice/s110_nrf51822_6.0.0/s110_nrf51822_6.0.0_softdevice.hex
 
 # Include the correct SoftDevice header files
 INCLUDEPATHS += -I"$(ROOT_PATH)lib/softdevice/s110_nrf51822_6.0.0/s110_nrf51822_6.0.0_API/include"
