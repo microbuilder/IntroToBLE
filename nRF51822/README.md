@@ -79,7 +79,7 @@ You can type 'make --version' to see if the build tools were properly installed 
 Update Makefile.windows to point to your Toolchain
 --------------------------------------------------
 
-The last thing you need to do is update Makefile.windows, which is a global config file located at lib/sdk/[SDKVersion]/Nordic/nrf51822/Source/templates/gcc.
+The last thing you need to do is update Makefile.common, which is located at projects/Makefile.common.
 
 This file needs to be updated with the folder where you installed the GNU ARM toolchain, as well as the toolchain version number.  This allows the makefile to point to the right toolchain if multiple versions are present on your system.
 
