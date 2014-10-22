@@ -177,7 +177,7 @@ else
 	@echo "Writing SoftDevice and User Code to Flash Memory"
 	@chmod 755 $(NRFJPROG)
 	$(NRFJPROG) wipe
-	$(NRFJPROG) program -S s110 -s $(SOFTDEVICE) -c $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex
+	$(NRFJPROG) program -s $(SOFTDEVICE) -c $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex
 endif
 
 .PHONY: reset
