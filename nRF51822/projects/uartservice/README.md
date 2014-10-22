@@ -12,7 +12,7 @@ A sample 'UART' type service with two characteristics is defined as follows:
 Target SDK/SD
 =============
 
-- **SDK**: v5.1.0
+- **SDK**: v5.2.0
 - **SoftDevice**: v6.0.0
 
 Building this Project
