@@ -78,8 +78,8 @@ Depending on your system and installation folder, the location that you need to 
 
 You can type 'make --version' to see if the build tools were properly installed and added to your path variable.
 
-Update Makefile.windows to point to your Toolchain
---------------------------------------------------
+Update Makefile.common to point to your Toolchain
+-------------------------------------------------
 
 The last thing you need to do is update Makefile.common, which is located at projects/Makefile.common.
 
