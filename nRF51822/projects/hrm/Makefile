@@ -64,4 +64,4 @@ CFLAGS += -DBLE_STACK_SUPPORT_REQD
 CFLAGS += -Wno-unused-local-typedefs
 
 # Add in the global Makefile
-include $(SDK_PATH)Source/templates/gcc/Makefile.common
+include ../Makefile.common
