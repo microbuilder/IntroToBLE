@@ -50,7 +50,7 @@ C_SOURCE_FILES += nrf_delay.c
 
 # Make sure we're pointing to the right SDK version
 ROOT_PATH = ../../
-SDK_PATH = $(ROOT_PATH)lib/sdk/nRF51_SDK_v5.1.0.36092/Nordic/nrf51822/
+SDK_PATH = $(ROOT_PATH)lib/sdk/nRF51_SDK_v5.2.0.39364/Nordic/nrf51822/
 
 # Include the correct SoftDevice header files
 INCLUDEPATHS += -I"$(ROOT_PATH)lib/softdevice/s110_nrf51822_6.0.0/s110_nrf51822_6.0.0_API/include"
@@ -69,4 +69,4 @@ INCLUDEPATHS += -I"$(SDK_PATH)Include/sd_common"
 CFLAGS += -DBLE_STACK_SUPPORT_REQD
 
 # Add in the global Makefile
-include $(SDK_PATH)Source/templates/gcc/Makefile.common
+include ../Makefile.common
