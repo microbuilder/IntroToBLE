@@ -1,5 +1,0 @@
-GNU_INSTALL_ROOT := C:/ARM/4.8_2013q4
-GNU_VERSION := 4.8.3
-GNU_PREFIX := arm-none-eabi
-
-NRFJPROG = $(ROOT_PATH)tools/Windows/nordic/nrfjprog.exe
