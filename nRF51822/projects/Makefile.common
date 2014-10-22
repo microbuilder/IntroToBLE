@@ -12,7 +12,7 @@ ifeq ($(OS),Windows_NT)
   GNU_PREFIX := arm-none-eabi
   NRFJPROG = $(ROOT_PATH)tools/Windows/nordic/nrfjprog.exe
 else
-  GNU_INSTALL_ROOT := /Users/kevintownsend/Downloads/gcc-arm-none-eabi-4_8-2013q4
+  GNU_INSTALL_ROOT := /Users/ktown/Downloads/gcc-arm-none-eabi-4_8-2014q1
   GNU_VERSION := 4.8.3
   GNU_PREFIX := arm-none-eabi
   NRFJPROG = $(ROOT_PATH)tools/OSX/rknrfgo/nrfjprog
