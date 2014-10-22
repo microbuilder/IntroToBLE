@@ -57,14 +57,6 @@ extern "C"
 {
 #endif
 
-static inline void debugger_breakpoint(void) ATTR_ALWAYS_INLINE;
-static inline void debugger_breakpoint(void)
-{
-#ifndef _TEST_
-  __asm("BKPT #0\n");
-#endif
-}
-
 //--------------------------------------------------------------------+
 // Compile-time Assert
 //--------------------------------------------------------------------+
@@ -79,13 +71,6 @@ static inline void debugger_breakpoint(void)
 //--------------------------------------------------------------------+
 // Assert Helper
 //--------------------------------------------------------------------+
-//#ifndef _TEST_
-//  #define ASSERT_MESSAGE(format, ...)\
-//    _PRINTF("Assert at %s: %s: %d: " format "\n", __BASE_FILE__, __PRETTY_FUNCTION__, __LINE__, __VA_ARGS__)
-//#else
-//  #define ASSERT_MESSAGE(format, ...)\
-//    _PRINTF("%d:note: Assert " format "\n", __LINE__, __VA_ARGS__)
-//#endif
 
 #if CFG_DEBUG == 3
   #define ASSERT_MESSAGE(format, ...) debugger_breakpoint()
@@ -159,8 +144,8 @@ static inline void debugger_breakpoint(void)
 // Integer Assert
 //--------------------------------------------------------------------+
 #define ASSERT_INT(...)        ASSERT_INT_EQUAL(__VA_ARGS__)
-#define ASSERT_INT_EQUAL(...)  ASSERT_XXX_EQUAL("%d", __VA_ARGS__)
-#define ASSERT_INT_WITHIN(...) ASSERT_XXX_WITHIN("%d", __VA_ARGS__)
+#define ASSERT_INT_EQUAL(...)  ASSERT_XXX_EQUAL("%lu", __VA_ARGS__)
+#define ASSERT_INT_WITHIN(...) ASSERT_XXX_WITHIN("%lu", __VA_ARGS__)
 
 //--------------------------------------------------------------------+
 // Hex Assert

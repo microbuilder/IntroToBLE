@@ -72,9 +72,9 @@ static inline uint8_t button_gpio_to_number(uint8_t pin_no)
             be handled in application code.
 */
 /**************************************************************************/
-static void button_event_handler(uint8_t pin_no);
-static void button_event_handler(uint8_t pin_no)
+static void button_event_handler(uint8_t pin_no, uint8_t button_action)
 {
+  (void) button_action;
   boardButtonCallback ( button_gpio_to_number(pin_no) );
 }
 
@@ -163,7 +163,7 @@ void boardInit(void)
     button_cfg[i] = (app_button_cfg_t)
                     {
                       .pin_no = button_gpio[i],
-                      .active_high = BOARD_BUTTON_ACTIVE_STATE ? true : false,
+                      .active_state = BOARD_BUTTON_ACTIVE_STATE ? true : false,
                       .pull_cfg = NRF_GPIO_PIN_PULLUP,
                       .button_handler = button_event_handler
                     };

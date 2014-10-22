@@ -22,7 +22,7 @@
 
 #include "btle_gap.h"
 #include "btle_advertising.h"
-//#include "custom/custom_helper.h"
+#include "custom_helper.h"
 
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF
